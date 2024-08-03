@@ -18,34 +18,38 @@ APlayerCharacter::APlayerCharacter()
 	FollowCmaera->bUsePawnControlRotation = false;
 
 	// Input
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Game/Blueprint/InputMapping/PlayerMappingContext"));
-	if (InputMappingContextRef.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext>Mapping(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Blueprint/InputMapping/Mapping.Mapping'"));
+	if(Mapping.Object)
 	{
-		DefaultMappingContext = InputMappingContextRef.Object;
+		DefaultMappingContext = Mapping.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Game/Blueprint/InputMapping/IA_Move"));
-	if (InputActionMoveRef.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Move(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Move.IA_Move'"));
+	if(IA_Move.Object)
 	{
-		MoveAction = InputActionMoveRef.Object;
+		MoveAction = IA_Move.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Game/Blueprint/InputMapping/IA_Look"));
-	if (InputActionLookRef.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Look(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Look.IA_Look'"));
+	if(IA_Look.Object)
 	{
-		LookAction = InputActionLookRef.Object;
+		LookAction = IA_Look.Object;
 	}
+	
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	if(APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			SubSystem->AddMappingContext(DefaultMappingContext, 0);
+		}
 	}
+
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -53,8 +57,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
-
+	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -74,16 +77,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-
-	if (MoveAction)
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-	}
-	if (LookAction)
-	{
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
 	}
-}
 
+}
 
