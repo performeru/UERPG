@@ -35,6 +35,18 @@ APlayerCharacter::APlayerCharacter()
 	{
 		LookAction = IA_Look.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Jump(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Jump.IA_Jump'"));
+	if (IA_Jump.Object)
+	{
+		JumpAction = IA_Jump.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Attack(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Attack.IA_Attack'"));
+	if (IA_Attack.Object)
+	{
+		AttackAction = IA_Attack.Object;
+	}
 	
 }
 
@@ -73,6 +85,11 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(LookAxisVector.Y);
 }
 
+void APlayerCharacter::Attack()
+{
+	ProcessComboCommand();
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -81,6 +98,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Attack);
 	}
 
 }
