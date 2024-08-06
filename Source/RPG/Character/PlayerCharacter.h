@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
 #include "InputActionValue.h"
+#include "Interface/RPAnimationAttackInterface.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class RPG_API APlayerCharacter : public ACharacterBase
+class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
 {
 	GENERATED_BODY()
 
@@ -44,4 +45,6 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack();
+
+	virtual void AttackHitCheck() override;
 };

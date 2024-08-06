@@ -16,5 +16,8 @@ class RPG_API AMushroomCharacter : public AEnemyCharacterBase
 
 public:
 	AMushroomCharacter();
+
+protected:
+	void SetDead() override;
 	
 };

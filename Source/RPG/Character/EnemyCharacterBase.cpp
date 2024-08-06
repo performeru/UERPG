@@ -15,7 +15,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 
 	// Capsule
 	GetCapsuleComponent()->InitCapsuleSize(60.0f, 55.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("RPCapsule"));
 
 	// Movement
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -29,7 +29,13 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	// Mesh
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("EnemyCharacterMesh"));
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> EnemyDeadMontageRef(TEXT("/Game/MonsterForSurvivalGame/Animation/PBR/Mushroom/MushroomDead.MushroomDead"));
+	if (EnemyDeadMontageRef.Object)
+	{
+		EnemyDeadMontage = EnemyDeadMontageRef.Object;
+	}
 
 }
 
@@ -52,5 +58,29 @@ void AEnemyCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInput
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	SetDead();
+
+	return DamageAmount;
+}
+
+void AEnemyCharacterBase::SetDead()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	PlayDeadAnimation();
+	SetActorEnableCollision(false);
+
+}
+
+void AEnemyCharacterBase::PlayDeadAnimation()
+{
+	UAnimInstance* AnimInstanc = GetMesh()->GetAnimInstance();
+	AnimInstanc->StopAllMontages(0.0f);
+	AnimInstanc->Montage_Play(EnemyDeadMontage, 1.0f);
 }
 
