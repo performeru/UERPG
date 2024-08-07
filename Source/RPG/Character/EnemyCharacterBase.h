@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interface/RPAIAllInterface.h"
 #include "EnemyCharacterBase.generated.h"
 
 UCLASS()
-class RPG_API AEnemyCharacterBase : public ACharacter
+class RPG_API AEnemyCharacterBase : public ACharacter, public IRPAIAllInterface
 {
 	GENERATED_BODY()
 
@@ -37,5 +38,13 @@ protected:
 	void PlayDeadAnimation();
 
 	float DeadEventDelayTime = 5.0f;
+
+
+protected:
+	// Ai 
+	virtual float GetAIPatrolRadius() override;
+	virtual float GetAIDetectRange() override;
+	virtual float GetAIAttackRange() override;
+	virtual float GetAITurnSpeed() override;
 
 };

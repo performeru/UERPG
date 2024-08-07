@@ -23,4 +23,5 @@ class RPG_API IRPAnimationAttackInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	virtual void AttackHitCheck() = 0;
+
 };

@@ -4,6 +4,7 @@
 #include "Character/EnemyCharacterBase.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AI/EnemyAIController.h"
 
 
 // Sets default values
@@ -36,6 +37,9 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	{
 		EnemyDeadMontage = EnemyDeadMontageRef.Object;
 	}
+
+	AIControllerClass = AEnemyAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 }
 
@@ -82,5 +86,25 @@ void AEnemyCharacterBase::PlayDeadAnimation()
 	UAnimInstance* AnimInstanc = GetMesh()->GetAnimInstance();
 	AnimInstanc->StopAllMontages(0.0f);
 	AnimInstanc->Montage_Play(EnemyDeadMontage, 1.0f);
+}
+
+float AEnemyCharacterBase::GetAIPatrolRadius()
+{
+	return 500.0f;
+}
+
+float AEnemyCharacterBase::GetAIDetectRange()
+{
+	return 400.0f;
+}
+
+float AEnemyCharacterBase::GetAIAttackRange()
+{
+	return 0.0f;
+}
+
+float AEnemyCharacterBase::GetAITurnSpeed()
+{
+	return 0.0f;
 }
 
