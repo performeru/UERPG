@@ -95,7 +95,7 @@ float AEnemyCharacterBase::GetAIPatrolRadius()
 
 float AEnemyCharacterBase::GetAIDetectRange()
 {
-	return 400.0f;
+	return 800.0f;
 }
 
 float AEnemyCharacterBase::GetAIAttackRange()

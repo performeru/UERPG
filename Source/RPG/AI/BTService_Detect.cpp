@@ -37,6 +37,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	}
 
 	float DetectRadius = AIPawn->GetAIDetectRange();
+	UE_LOG(LogTemp, Warning, TEXT("DetectRadius: %f"), DetectRadius);
 
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParam(SCENE_QUERY_STAT(Detect), false, ControllingPawn);
