@@ -31,13 +31,32 @@ protected:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	// Dead
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> EnemyDeadMontage;
 
+
 	virtual void SetDead();
-	void PlayDeadAnimation();
+	virtual void PlayDeadAnimation();
 
 	float DeadEventDelayTime = 5.0f;
+	
+	// Attack 새로추가한거 보고 삭제
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	TObjectPtr<class UAnimMontage> AttackActionMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowAbstract = "true"))
+	TObjectPtr<class URP_EnemyAttack> AttackActionData;
+
+	void ProcessAttackAction();
+	void AttackActionBegin();
+	void AttackActionEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
+	virtual void NotifyAttackActionEnd();
+	void SetAttackCheckTimer();
+	void AttackCheck();
+
+	int32 CurrentAttack = 0;
+	FTimerHandle AttackTimerHandle;
+	bool HasNextAttackAction = false;
 
 
 protected:
@@ -46,5 +65,22 @@ protected:
 	virtual float GetAIDetectRange() override;
 	virtual float GetAIAttackRange() override;
 	virtual float GetAITurnSpeed() override;
+
+	virtual void AttackByAI() override;
+	virtual void SetAIAttackDelegate(const FAICharacterEnemyAttackFinished& InOnAttackFinished) override;
+	
+	FAICharacterEnemyAttackFinished OnAttackFinished;
+
+	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowAbstract = "true"))
+	float AttackRadius;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowAbstract = "true"))
+	float EnemyLevel;
+
+	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowAbstract = "true"))
+	float EnemyHp;
+
+	const float EnemyAttackRange = 40.0f;
+	const float EnemyAttackRadius = 50.0f;
 
 };

@@ -20,6 +20,18 @@ AMushroomCharacter::AMushroomCharacter()
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> EnemyDeadMontageRef(TEXT("/Game/MonsterForSurvivalGame/Animation/PBR/Mushroom/MushroomDead.MushroomDead"));
+	if (EnemyDeadMontageRef.Object)
+	{
+		EnemyDeadMontage = EnemyDeadMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> EnemyAttackMontageRef(TEXT("/Game/MonsterForSurvivalGame/Animation/PBR/Mushroom/MushroomAttack.MushroomAttack"));
+	if (EnemyAttackMontageRef.Object)
+	{
+		AttackActionMontage = EnemyAttackMontageRef.Object;
+	}
+
 }
 
 void AMushroomCharacter::SetDead()
@@ -28,4 +40,16 @@ void AMushroomCharacter::SetDead()
 
 	FTimerHandle DeadTimerHanlde;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda( [&]() { Destroy(); }), DeadEventDelayTime, false);
+}
+
+void AMushroomCharacter::PlayDeadAnimation()
+{
+	Super::PlayDeadAnimation();
+}
+
+void AMushroomCharacter::NotifyAttackActionEnd()
+{
+	Super::NotifyAttackActionEnd();
+
+	OnAttackFinished.ExecuteIfBound();
 }

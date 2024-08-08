@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AI/EnemyAIController.h"
+#include "EnemyCharacter/RP_EnemyAttack.h"
 
 
 // Sets default values
@@ -31,12 +32,6 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> EnemyDeadMontageRef(TEXT("/Game/MonsterForSurvivalGame/Animation/PBR/Mushroom/MushroomDead.MushroomDead"));
-	if (EnemyDeadMontageRef.Object)
-	{
-		EnemyDeadMontage = EnemyDeadMontageRef.Object;
-	}
 
 	AIControllerClass = AEnemyAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -88,6 +83,85 @@ void AEnemyCharacterBase::PlayDeadAnimation()
 	AnimInstanc->Montage_Play(EnemyDeadMontage, 1.0f);
 }
 
+void AEnemyCharacterBase::ProcessAttackAction()
+{
+	if (CurrentAttack == 0)
+	{
+		AttackActionBegin();
+		return;
+	}
+
+	if (!AttackTimerHandle.IsValid())
+	{
+		HasNextAttackAction = false;
+	}
+	else
+	{
+		HasNextAttackAction = true;
+	}
+}
+
+void AEnemyCharacterBase::AttackActionBegin()
+{
+	CurrentAttack = 1;
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+	const float AttackSpeedRate = 1.0f;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->Montage_Play(AttackActionMontage, AttackSpeedRate);
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &AEnemyCharacterBase::AttackActionEnd);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackActionMontage);
+
+	AttackTimerHandle.Invalidate();
+	SetAttackCheckTimer();
+}
+
+void AEnemyCharacterBase::AttackActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
+{
+	ensure(CurrentAttack != 0);
+	CurrentAttack = 0;
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	NotifyAttackActionEnd();
+}
+
+void AEnemyCharacterBase::NotifyAttackActionEnd()
+{
+}
+
+void AEnemyCharacterBase::SetAttackCheckTimer()
+{
+	int32 ComboIndex = CurrentAttack - 1;
+	ensure(AttackActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
+
+	const float AttackSppedRate = 1.0f;
+	float ComboEffectiveTime = (AttackActionData->EffectiveFrameCount[ComboIndex] / AttackActionData->FrameRate) / AttackSppedRate;
+	if (ComboEffectiveTime > 0.0f)
+	{
+		GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyCharacterBase::AttackCheck, ComboEffectiveTime, false);
+	}
+}
+
+void AEnemyCharacterBase::AttackCheck()
+{
+	AttackTimerHandle.Invalidate();
+	if (HasNextAttackAction)
+	{
+		UAnimInstance* AnimInstanc = GetMesh()->GetAnimInstance();
+
+		CurrentAttack = FMath::Clamp(CurrentAttack + 1, 1, AttackActionData->MaxAttackCount);
+		FName NextSection = *FString::Printf(TEXT("%s%d"), *AttackActionData->MontageSectionNamePrefix, CurrentAttack);
+		AnimInstanc->Montage_JumpToSection(NextSection, AttackActionMontage);
+		SetAttackCheckTimer();
+		HasNextAttackAction = false;
+	}
+}
+
 float AEnemyCharacterBase::GetAIPatrolRadius()
 {
 	return 500.0f;
@@ -100,11 +174,21 @@ float AEnemyCharacterBase::GetAIDetectRange()
 
 float AEnemyCharacterBase::GetAIAttackRange()
 {
-	return 0.0f;
+	return EnemyAttackRadius + EnemyAttackRange * 2;
 }
 
 float AEnemyCharacterBase::GetAITurnSpeed()
 {
 	return 0.0f;
+}
+
+void AEnemyCharacterBase::AttackByAI()
+{
+	ProcessAttackAction();
+}
+
+void AEnemyCharacterBase::SetAIAttackDelegate(const FAICharacterEnemyAttackFinished& InOnAttackFinished)
+{
+	OnAttackFinished = InOnAttackFinished;
 }
 
