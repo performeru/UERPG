@@ -57,8 +57,7 @@ protected:
 	int32 CurrentAttack = 0;
 	FTimerHandle AttackTimerHandle;
 	bool HasNextAttackAction = false;
-
-
+	
 protected:
 	// Ai 
 	virtual float GetAIPatrolRadius() override;

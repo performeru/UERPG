@@ -36,6 +36,12 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	AIControllerClass = AEnemyAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
+	static ConstructorHelpers::FObjectFinder<URP_EnemyAttack> AttackActionDataRef(TEXT("/Game/EnemyCharacterAction/AttackActionData.AttackActionData"));
+	if (AttackActionDataRef.Succeeded())
+	{
+		AttackActionData = AttackActionDataRef.Object;
+	}
+
 }
 
 // Called when the game starts or when spawned
@@ -91,14 +97,6 @@ void AEnemyCharacterBase::ProcessAttackAction()
 		return;
 	}
 
-	if (!AttackTimerHandle.IsValid())
-	{
-		HasNextAttackAction = false;
-	}
-	else
-	{
-		HasNextAttackAction = true;
-	}
 }
 
 void AEnemyCharacterBase::AttackActionBegin()
@@ -110,14 +108,20 @@ void AEnemyCharacterBase::AttackActionBegin()
 	const float AttackSpeedRate = 1.0f;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->Montage_Play(AttackActionMontage, AttackSpeedRate);
+	if (AnimInstance && AttackActionMontage)
+	{
+		AnimInstance->Montage_Play(AttackActionMontage, AttackSpeedRate);
 
-	FOnMontageEnded EndDelegate;
-	EndDelegate.BindUObject(this, &AEnemyCharacterBase::AttackActionEnd);
-	AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackActionMontage);
+		FOnMontageEnded EndDelegate;
+		EndDelegate.BindUObject(this, &AEnemyCharacterBase::AttackActionEnd);
+		AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackActionMontage);
 
-	AttackTimerHandle.Invalidate();
-	SetAttackCheckTimer();
+		SetAttackCheckTimer();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AnimInstance is nullptr or AttackActionMontage is nullptr."));
+	}
 }
 
 void AEnemyCharacterBase::AttackActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
@@ -130,20 +134,34 @@ void AEnemyCharacterBase::AttackActionEnd(UAnimMontage* TargetMontage, bool IsPr
 	NotifyAttackActionEnd();
 }
 
-void AEnemyCharacterBase::NotifyAttackActionEnd()
-{
-}
+void AEnemyCharacterBase::NotifyAttackActionEnd(){}
 
 void AEnemyCharacterBase::SetAttackCheckTimer()
 {
-	int32 ComboIndex = CurrentAttack - 1;
-	ensure(AttackActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
+	
+	if (AttackActionData == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AttackActionData is nullptr."));
+		return;
+	}
 
-	const float AttackSppedRate = 1.0f;
-	float ComboEffectiveTime = (AttackActionData->EffectiveFrameCount[ComboIndex] / AttackActionData->FrameRate) / AttackSppedRate;
+	int32 ComboIndex = CurrentAttack - 1;
+	if (!AttackActionData->EffectiveFrameCount.IsValidIndex(ComboIndex))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid ComboIndex: %d"), ComboIndex);
+		return;
+	}
+
+	const float AttackSpeedRate = 1.0f;
+	float ComboEffectiveTime = (AttackActionData->EffectiveFrameCount[ComboIndex] / AttackActionData->FrameRate) / AttackSpeedRate;
+
 	if (ComboEffectiveTime > 0.0f)
 	{
 		GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyCharacterBase::AttackCheck, ComboEffectiveTime, false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ComboEffectiveTime is less than or equal to 0: %f"), ComboEffectiveTime);
 	}
 }
 
@@ -179,7 +197,7 @@ float AEnemyCharacterBase::GetAIAttackRange()
 
 float AEnemyCharacterBase::GetAITurnSpeed()
 {
-	return 0.0f;
+	return 2.0f;
 }
 
 void AEnemyCharacterBase::AttackByAI()

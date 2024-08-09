@@ -26,7 +26,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Name")
 	float FrameRate;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ComboData")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AttackData")
 	TArray<float> EffectiveFrameCount;
 
 };

@@ -5,4 +5,5 @@
 
 URP_EnemyAttack::URP_EnemyAttack()
 {
+	EffectiveFrameCount.SetNumUninitialized(MaxAttackCount);
 }
