@@ -34,7 +34,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> EnemyDeadMontage;
 
-
 	virtual void SetDead();
 	virtual void PlayDeadAnimation();
 

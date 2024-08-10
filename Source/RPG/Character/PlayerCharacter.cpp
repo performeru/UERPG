@@ -7,6 +7,8 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "Engine/DamageEvents.h"
+#include "CharacterStat/RPCharacterStatComponent.h"
+#include "Components/WidgetComponent.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -19,6 +21,17 @@ APlayerCharacter::APlayerCharacter()
 	FollowCmaera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCmaera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCmaera->bUsePawnControlRotation = false;
+
+	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	//CameraBoom->SetupAttachment(RootComponent);
+	//CameraBoom->TargetArmLength = 400.f;
+	//CameraBoom->SocketOffset = FVector(0.f, 0.f, 50.f); // 카메라 높이 조절
+	//CameraBoom->bUsePawnControlRotation = false; // 카메라를 직접 제어하도록 설정
+
+	//FollowCmaera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	//FollowCmaera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	//FollowCmaera->bUsePawnControlRotation = false; // 카메라를 직접 제어하도록 설정
+
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard'"));
 	if (CharacterMeshRef.Object)
@@ -63,6 +76,21 @@ APlayerCharacter::APlayerCharacter()
 		AttackAction = IA_Attack.Object;
 	}
 	
+	// Stat Component
+	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("Stat"));
+
+	// Widget Component
+	HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	HpBar->SetupAttachment(GetMesh());
+	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UI/WBP_HpBar.WBP_HpBar_C"));
+	if(HpBarWidgetRef.Class)
+	{
+		HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+		HpBar->SetWidgetSpace(EWidgetSpace::Screen);
+		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
+		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void APlayerCharacter::BeginPlay()

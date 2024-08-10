@@ -47,4 +47,15 @@ protected:
 	void Attack();
 
 	virtual void AttackHitCheck() override;
+
+protected:
+	// Stat Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
+	TObjectPtr<class URPCharacterStatComponent> Stat;
+
+
+protected:
+	// UI Widget Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowAbstract = "true"))
+	TObjectPtr<class UWidgetComponent> HpBar;
 };

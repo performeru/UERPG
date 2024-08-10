@@ -77,16 +77,15 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 void AEnemyCharacterBase::SetDead()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	PlayDeadAnimation();
 	SetActorEnableCollision(false);
-
+	PlayDeadAnimation();
 }
 
 void AEnemyCharacterBase::PlayDeadAnimation()
 {
 	UAnimInstance* AnimInstanc = GetMesh()->GetAnimInstance();
 	AnimInstanc->StopAllMontages(0.0f);
-	AnimInstanc->Montage_Play(EnemyDeadMontage, 1.0f);
+	AnimInstanc->Montage_Play(EnemyDeadMontage, 3.0f);
 }
 
 void AEnemyCharacterBase::ProcessAttackAction()
@@ -118,10 +117,6 @@ void AEnemyCharacterBase::AttackActionBegin()
 
 		SetAttackCheckTimer();
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("AnimInstance is nullptr or AttackActionMontage is nullptr."));
-	}
 }
 
 void AEnemyCharacterBase::AttackActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
@@ -138,20 +133,10 @@ void AEnemyCharacterBase::NotifyAttackActionEnd(){}
 
 void AEnemyCharacterBase::SetAttackCheckTimer()
 {
-	
-	if (AttackActionData == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AttackActionData is nullptr."));
-		return;
-	}
-
 	int32 ComboIndex = CurrentAttack - 1;
-	if (!AttackActionData->EffectiveFrameCount.IsValidIndex(ComboIndex))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid ComboIndex: %d"), ComboIndex);
-		return;
-	}
 
+	AttackActionData->EffectiveFrameCount.IsValidIndex(ComboIndex);
+	
 	const float AttackSpeedRate = 1.0f;
 	float ComboEffectiveTime = (AttackActionData->EffectiveFrameCount[ComboIndex] / AttackActionData->FrameRate) / AttackSpeedRate;
 
@@ -159,10 +144,7 @@ void AEnemyCharacterBase::SetAttackCheckTimer()
 	{
 		GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &AEnemyCharacterBase::AttackCheck, ComboEffectiveTime, false);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("ComboEffectiveTime is less than or equal to 0: %f"), ComboEffectiveTime);
-	}
+	
 }
 
 void AEnemyCharacterBase::AttackCheck()
