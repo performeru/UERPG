@@ -3,6 +3,7 @@
 
 #include "UI/RPCharacterHpBarWidget.h"
 #include "Components/ProgressBar.h"
+#include "Interface/CharacterWidgetInterface.h"
 
 URPCharacterHpBarWidget::URPCharacterHpBarWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -15,6 +16,12 @@ void URPCharacterHpBarWidget::NativeConstruct()
 
 	HpProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("pbHpBar")));
 	ensure(HpProgressBar);
+
+	ICharacterWidgetInterface* CharacterWidget = Cast<ICharacterWidgetInterface>(OwningActor);
+	if(CharacterWidget)
+	{
+		CharacterWidget->SetupCharacterWidget(this);
+	}
 }
 
 void URPCharacterHpBarWidget::UpdateHpbar(float NewCurrentHp)

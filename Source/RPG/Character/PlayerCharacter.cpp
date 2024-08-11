@@ -8,7 +8,9 @@
 #include "InputAction.h"
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/RPCharacterStatComponent.h"
-#include "Components/WidgetComponent.h"
+#include "UI/RPWidgetComponent.h"
+#include "UI/RPCharacterHpBarWidget.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -80,7 +82,7 @@ APlayerCharacter::APlayerCharacter()
 	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("Stat"));
 
 	// Widget Component
-	HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	HpBar = CreateDefaultSubobject<URPWidgetComponent>(TEXT("Widget"));
 	HpBar->SetupAttachment(GetMesh());
 	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
 	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UI/WBP_HpBar.WBP_HpBar_C"));
@@ -91,6 +93,14 @@ APlayerCharacter::APlayerCharacter()
 		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
 		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+}
+
+// Dead
+void APlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::SetDead);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -159,6 +169,33 @@ void APlayerCharacter::AttackHitCheck()
 	DrawDebugCapsule(GetWorld(), CapsuleOrignin, CapsuleHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 #endif // ENABLE_DRAW_DEBUG
 
+}
+
+float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	Stat->ApplyDamage(DamageAmount);
+
+	return DamageAmount;
+}
+
+void APlayerCharacter::SetDead()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	SetActorEnableCollision(false);
+}
+
+
+void APlayerCharacter::SetupCharacterWidget(URPUserWidget* InUserWidget)
+{
+	URPCharacterHpBarWidget* HpBarWidget = Cast<URPCharacterHpBarWidget>(InUserWidget);
+	if(HpBarWidget)
+	{
+		HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+		HpBarWidget->UpdateHpbar(Stat->GeCurrentHp());
+		Stat->OnHpChanged.AddUObject(HpBarWidget, &URPCharacterHpBarWidget::UpdateHpbar);
+	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

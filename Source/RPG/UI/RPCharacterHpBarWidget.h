@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "RPUserWidget.h"
 #include "RPCharacterHpBarWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API URPCharacterHpBarWidget : public UUserWidget
+class RPG_API URPCharacterHpBarWidget : public URPUserWidget
 {
 	GENERATED_BODY()
 	

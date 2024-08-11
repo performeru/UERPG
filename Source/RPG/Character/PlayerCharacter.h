@@ -4,15 +4,18 @@
 #include "Character/CharacterBase.h"
 #include "InputActionValue.h"
 #include "Interface/RPAnimationAttackInterface.h"
+#include "Interface/CharacterWidgetInterface.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
+class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface, public ICharacterWidgetInterface
 {
 	GENERATED_BODY()
 
 public:
 	APlayerCharacter();
+
+	virtual void PostInitializeComponents() override;
 
 public:
 	virtual void BeginPlay() override;
@@ -47,6 +50,8 @@ protected:
 	void Attack();
 
 	virtual void AttackHitCheck() override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	void SetDead();
 
 protected:
 	// Stat Section
@@ -57,5 +62,7 @@ protected:
 protected:
 	// UI Widget Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowAbstract = "true"))
-	TObjectPtr<class UWidgetComponent> HpBar;
+	TObjectPtr<class URPWidgetComponent> HpBar;
+
+	virtual void SetupCharacterWidget(class URPUserWidget* InUserWidget) override;
 };
