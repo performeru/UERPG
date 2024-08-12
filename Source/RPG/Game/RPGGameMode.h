@@ -17,4 +17,12 @@ class RPG_API ARPGGameMode : public AGameModeBase
 public:
 	ARPGGameMode();
 
+protected:
+	virtual void BeginPlay() override;
+	// 수정부분 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG")
+	UUserWidget* CurrentWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG")
+	TSubclassOf<UUserWidget> HUDWidget;
 };

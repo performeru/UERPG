@@ -4,11 +4,10 @@
 #include "Character/CharacterBase.h"
 #include "InputActionValue.h"
 #include "Interface/RPAnimationAttackInterface.h"
-#include "Interface/CharacterWidgetInterface.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface, public ICharacterWidgetInterface
+class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
 {
 	GENERATED_BODY()
 
@@ -57,12 +56,6 @@ protected:
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
 	TObjectPtr<class URPCharacterStatComponent> Stat;
-
-
 protected:
-	// UI Widget Section
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowAbstract = "true"))
-	TObjectPtr<class URPWidgetComponent> HpBar;
 
-	virtual void SetupCharacterWidget(class URPUserWidget* InUserWidget) override;
 };

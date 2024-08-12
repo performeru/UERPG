@@ -8,8 +8,6 @@
 #include "InputAction.h"
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/RPCharacterStatComponent.h"
-#include "UI/RPWidgetComponent.h"
-#include "UI/RPCharacterHpBarWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -81,18 +79,6 @@ APlayerCharacter::APlayerCharacter()
 	// Stat Component
 	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("Stat"));
 
-	// Widget Component
-	HpBar = CreateDefaultSubobject<URPWidgetComponent>(TEXT("Widget"));
-	HpBar->SetupAttachment(GetMesh());
-	HpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
-	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UI/WBP_HpBar.WBP_HpBar_C"));
-	if(HpBarWidgetRef.Class)
-	{
-		HpBar->SetWidgetClass(HpBarWidgetRef.Class);
-		HpBar->SetWidgetSpace(EWidgetSpace::Screen);
-		HpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
-		HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
 }
 
 // Dead
@@ -175,8 +161,6 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	Stat->ApplyDamage(DamageAmount);
-
 	return DamageAmount;
 }
 
@@ -186,17 +170,6 @@ void APlayerCharacter::SetDead()
 	SetActorEnableCollision(false);
 }
 
-
-void APlayerCharacter::SetupCharacterWidget(URPUserWidget* InUserWidget)
-{
-	URPCharacterHpBarWidget* HpBarWidget = Cast<URPCharacterHpBarWidget>(InUserWidget);
-	if(HpBarWidget)
-	{
-		HpBarWidget->SetMaxHp(Stat->GetMaxHp());
-		HpBarWidget->UpdateHpbar(Stat->GeCurrentHp());
-		Stat->OnHpChanged.AddUObject(HpBarWidget, &URPCharacterHpBarWidget::UpdateHpbar);
-	}
-}
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

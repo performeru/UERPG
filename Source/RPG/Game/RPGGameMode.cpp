@@ -2,6 +2,23 @@
 
 
 #include "Game/RPGGameMode.h"
+#include "Blueprint/UserWidget.h"
+
+
+void ARPGGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HUDWidget)
+	{
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), HUDWidget);
+		if (CurrentWidget)
+		{
+			CurrentWidget->AddToViewport();
+		}
+	}
+}
+
 
 ARPGGameMode::ARPGGameMode()
 {
@@ -9,5 +26,11 @@ ARPGGameMode::ARPGGameMode()
 	if(DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> HUDWidgetClassFinder(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/HUD.HUD'"));
+	if (HUDWidgetClassFinder.Succeeded())
+	{
+		HUDWidget = HUDWidgetClassFinder.Class;
 	}
 }
