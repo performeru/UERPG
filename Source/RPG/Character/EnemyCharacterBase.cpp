@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AI/EnemyAIController.h"
+#include "Engine/DamageEvents.h"
 #include "EnemyCharacter/RP_EnemyAttack.h"
 
 
@@ -190,5 +191,22 @@ void AEnemyCharacterBase::AttackByAI()
 void AEnemyCharacterBase::SetAIAttackDelegate(const FAICharacterEnemyAttackFinished& InOnAttackFinished)
 {
 	OnAttackFinished = InOnAttackFinished;
+}
+
+void AEnemyCharacterBase::AttackHitCheck()
+{
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+
+	const float EnemyAttackDamage = 30.0f;
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * EnemyAttackRange;
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel1, FCollisionShape::MakeSphere(AttackRadius), Params);
+	if (HitDetected)
+	{
+		FDamageEvent DamageEvent;
+		OutHitResult.GetActor()->TakeDamage(EnemyAttackDamage, DamageEvent, GetController(), this);
+	}
 }
 

@@ -6,6 +6,32 @@
 #include "Interface/RPAnimationAttackInterface.h"
 #include "PlayerCharacter.generated.h"
 
+USTRUCT(BlueprintType)
+struct FCharacterInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FCharacterInfo()
+	{
+		CharacterName = FText::FromString("Name");
+		CharacterLevel = 1;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName CharacterID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText CharacterName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CharacterThumbnail;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 CharacterLevel;
+
+};
+
 UCLASS()
 class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
 {
@@ -50,12 +76,16 @@ protected:
 
 	virtual void AttackHitCheck() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	void SetDead();
 
 protected:
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
 	TObjectPtr<class URPCharacterStatComponent> Stat;
 protected:
+	// Dead Section
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
+	TObjectPtr<class UAnimMontage> DeadMontage;
 
+	void SetDead();
+	void PlayDeadAnimation();
 };

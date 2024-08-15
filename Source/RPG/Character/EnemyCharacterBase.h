@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/RPAIAllInterface.h"
+#include "Interface/RPAnimationAttackInterface.h"
 #include "EnemyCharacterBase.generated.h"
 
 UCLASS()
-class RPG_API AEnemyCharacterBase : public ACharacter, public IRPAIAllInterface
+class RPG_API AEnemyCharacterBase : public ACharacter, public IRPAIAllInterface, public IRPAnimationAttackInterface
 {
 	GENERATED_BODY()
 
@@ -80,5 +81,9 @@ protected:
 
 	const float EnemyAttackRange = 40.0f;
 	const float EnemyAttackRadius = 50.0f;
+
+	// Attack hit
+protected:
+	virtual void AttackHitCheck() override;
 
 };
