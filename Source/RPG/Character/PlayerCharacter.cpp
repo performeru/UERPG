@@ -178,6 +178,11 @@ void APlayerCharacter::SetDead()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
+
+	DisableInput(Cast<APlayerController>(GetController()));
+
+	FTimerHandle DeadTimerHanlde;
+	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda([&]() { Destroy(); }), DeadEventDelayTime, false);
 }
 
 void APlayerCharacter::PlayDeadAnimation()

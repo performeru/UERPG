@@ -19,6 +19,6 @@ public:
 
 protected:
 	void SetDead() override;
-	virtual void PlayDeadAnimation() override;
+	virtual void PlayDeadAnimation();
 	virtual void NotifyAttackActionEnd() override;
 };

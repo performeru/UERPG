@@ -27,7 +27,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<class UAnimMontage> ComboActionMontage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowAbstract = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UComboActionDataAsset> ComboActionData;
 
 	void ProcessComboCommand();

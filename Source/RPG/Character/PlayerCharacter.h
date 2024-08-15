@@ -63,10 +63,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> LookAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowAbstract = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> JumpAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowAbstract = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AttackAction;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -87,5 +87,6 @@ protected:
 	TObjectPtr<class UAnimMontage> DeadMontage;
 
 	void SetDead();
+	float DeadEventDelayTime = 2.0f;
 	void PlayDeadAnimation();
 };

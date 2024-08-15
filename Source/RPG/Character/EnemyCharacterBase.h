@@ -38,7 +38,7 @@ protected:
 	virtual void SetDead();
 	virtual void PlayDeadAnimation();
 
-	float DeadEventDelayTime = 5.0f;
+	float EnemyDeadEventDelayTime = 3.0f;
 	
 	// Attack 새로추가한거 보고 삭제
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
@@ -70,13 +70,13 @@ protected:
 	
 	FAICharacterEnemyAttackFinished OnAttackFinished;
 
-	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowAbstract = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
 
-	UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowAbstract = "true"))
+	UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float EnemyLevel;
 
-	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowAbstract = "true"))
+	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float EnemyHp;
 
 	const float EnemyAttackRange = 40.0f;
@@ -86,4 +86,11 @@ protected:
 protected:
 	virtual void AttackHitCheck() override;
 
+protected:
+	// Stat Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class URPEnemyStatComponent> EnemyStat;
+	// UI Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UWidgetComponent> EnemyHpBar;
 };

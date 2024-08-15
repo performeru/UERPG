@@ -39,12 +39,15 @@ void AMushroomCharacter::SetDead()
 	Super::SetDead();
 
 	FTimerHandle DeadTimerHanlde;
-	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda( [&]() { Destroy(); }), DeadEventDelayTime, false);
+	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda( [&]() { Destroy(); }), EnemyDeadEventDelayTime, false);
+
 }
 
 void AMushroomCharacter::PlayDeadAnimation()
 {
-	Super::PlayDeadAnimation();
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(EnemyDeadMontage, 1.0f);
 }
 
 void AMushroomCharacter::NotifyAttackActionEnd()

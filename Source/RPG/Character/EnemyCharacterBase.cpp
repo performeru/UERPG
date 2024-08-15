@@ -7,6 +7,8 @@
 #include "AI/EnemyAIController.h"
 #include "Engine/DamageEvents.h"
 #include "EnemyCharacter/RP_EnemyAttack.h"
+#include "CharacterStat/RPEnemyStatComponent.h"
+#include "Components/WidgetComponent.h"
 
 
 // Sets default values
@@ -41,6 +43,22 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	if (AttackActionDataRef.Succeeded())
 	{
 		AttackActionData = AttackActionDataRef.Object;
+	}
+
+	// Stat Component 
+	EnemyStat = CreateDefaultSubobject<URPEnemyStatComponent>(TEXT("EnemyStat"));
+
+	// Widget Component 
+	EnemyHpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("EnemyWidget"));
+	EnemyHpBar->SetupAttachment(GetMesh());
+	EnemyHpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UI/EnemyHpBar.EnemyHpBar_C"));
+	if (HpBarWidgetRef.Class)
+	{
+		EnemyHpBar->SetWidgetClass(HpBarWidgetRef.Class);
+		EnemyHpBar->SetWidgetSpace(EWidgetSpace::Screen);
+		EnemyHpBar->SetDrawSize(FVector2D(150.0f, 15.0f));
+		EnemyHpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
 }
@@ -78,8 +96,8 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 void AEnemyCharacterBase::SetDead()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	SetActorEnableCollision(false);
 	PlayDeadAnimation();
+	SetActorEnableCollision(false);
 }
 
 void AEnemyCharacterBase::PlayDeadAnimation()
