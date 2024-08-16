@@ -8,7 +8,8 @@
 #include "Engine/DamageEvents.h"
 #include "EnemyCharacter/RP_EnemyAttack.h"
 #include "CharacterStat/RPEnemyStatComponent.h"
-#include "Components/WidgetComponent.h"
+#include "UI/RPWidgetComponent.h"
+#include"UI/EnemyHpBarWidget.h"
 
 
 // Sets default values
@@ -49,7 +50,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	EnemyStat = CreateDefaultSubobject<URPEnemyStatComponent>(TEXT("EnemyStat"));
 
 	// Widget Component 
-	EnemyHpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("EnemyWidget"));
+	EnemyHpBar = CreateDefaultSubobject<URPWidgetComponent>(TEXT("EnemyWidget"));
 	EnemyHpBar->SetupAttachment(GetMesh());
 	EnemyHpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
 	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UI/EnemyHpBar.EnemyHpBar_C"));
@@ -63,11 +64,19 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 
 }
 
+void AEnemyCharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	//EnemyStat->OnEnemyHpZero.AddUObject(this, &AEnemyCharacterBase::SetDead);
+}
+
 // Called when the game starts or when spawned
 void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	EnemyStat->OnEnemyHpZero.AddUObject(this, &AEnemyCharacterBase::SetDead);
 }
 
 // Called every frame
@@ -88,7 +97,7 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	EnemyStat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
 }
@@ -225,6 +234,30 @@ void AEnemyCharacterBase::AttackHitCheck()
 	{
 		FDamageEvent DamageEvent;
 		OutHitResult.GetActor()->TakeDamage(EnemyAttackDamage, DamageEvent, GetController(), this);
+	}
+}
+
+void AEnemyCharacterBase::SetupEnemyWidget(URPUserWidget* InUserWidget)
+{
+	UEnemyHpBarWidget* EnemyHpBarWidget = Cast<UEnemyHpBarWidget>(InUserWidget);
+	if(EnemyHpBarWidget)
+	{
+		float MaxHp = EnemyStat->EnemyGetMaxHp();
+		float CurrentHp = EnemyStat->EnemyGetCurrentHp();
+
+		UE_LOG(LogTemp, Warning, TEXT("SetupEnemyWidget: MaxHp = %f, CurrentHp = %f"), MaxHp, CurrentHp);
+
+		EnemyHpBarWidget->EnemySetMaxHp(MaxHp);
+		EnemyHpBarWidget->UpdateEnemyHpBar(CurrentHp);
+
+
+		//EnemyHpBarWidget->EnemySetMaxHp(EnemyStat->EnemyGetMaxHp());
+		//EnemyHpBarWidget->UpdateEnemyHpBar(EnemyStat->EnemyGetCurrentHp());
+		EnemyStat->OnEnemyHpChanged.AddUObject(EnemyHpBarWidget, &UEnemyHpBarWidget::UpdateEnemyHpBar);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SetupEnemyWidget: Failed to cast InUserWidget to UEnemyHpBarWidget"));
 	}
 }
 

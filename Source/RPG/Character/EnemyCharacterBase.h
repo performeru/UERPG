@@ -6,16 +6,19 @@
 #include "GameFramework/Character.h"
 #include "Interface/RPAIAllInterface.h"
 #include "Interface/RPAnimationAttackInterface.h"
+#include "Interface/RPEnemyWidgetInterface.h"
 #include "EnemyCharacterBase.generated.h"
 
 UCLASS()
-class RPG_API AEnemyCharacterBase : public ACharacter, public IRPAIAllInterface, public IRPAnimationAttackInterface
+class RPG_API AEnemyCharacterBase : public ACharacter, public IRPAIAllInterface, public IRPAnimationAttackInterface, public IRPEnemyWidgetInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AEnemyCharacterBase();
+
+	virtual void PostInitializeComponents() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -92,5 +95,7 @@ protected:
 	TObjectPtr<class URPEnemyStatComponent> EnemyStat;
 	// UI Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UWidgetComponent> EnemyHpBar;
+	TObjectPtr<class URPWidgetComponent> EnemyHpBar;
+
+	virtual void SetupEnemyWidget(class URPUserWidget* InUserWidget) override;
 };

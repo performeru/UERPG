@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "RPUserWidget.h"
 #include "EnemyHpBarWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API UEnemyHpBarWidget : public UUserWidget
+class RPG_API UEnemyHpBarWidget : public URPUserWidget
 {
 	GENERATED_BODY()
 	
@@ -24,7 +24,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UProgressBar> EnemyHpProgressBar;
 
 	UPROPERTY()
