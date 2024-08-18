@@ -8,8 +8,6 @@ URPEnemyStatComponent::URPEnemyStatComponent()
 {
 	EnemyMaxHp = 200.0f;
 	EnemyCurrentHp = EnemyMaxHp;
-
-	UE_LOG(LogTemp, Warning, TEXT("URPEnemyStatComponent: Initialized with MaxHp = %f, CurrentHp = %f"), EnemyMaxHp, EnemyCurrentHp);
 }
 // Called when the game starts
 void URPEnemyStatComponent::BeginPlay()
@@ -22,8 +20,6 @@ void URPEnemyStatComponent::BeginPlay()
 void URPEnemyStatComponent::EnemySetHp(float NewEnemyHp)
 {
 	EnemyCurrentHp = FMath::Clamp<float>(NewEnemyHp, 0.0f, EnemyMaxHp);
-
-	UE_LOG(LogTemp, Warning, TEXT("URPEnemyStatComponent: SetHp called with NewHp = %f, CurrentHp = %f"), NewEnemyHp, EnemyCurrentHp);
 
 	OnEnemyHpChanged.Broadcast(EnemyCurrentHp);
 }

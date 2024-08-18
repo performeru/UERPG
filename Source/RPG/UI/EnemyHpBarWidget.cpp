@@ -19,25 +19,13 @@ void UEnemyHpBarWidget::UpdateEnemyHpBar(float NewEnemyCurrentHp)
 		float Percent = NewEnemyCurrentHp / EnemyMaxHp;
 		EnemyHpProgressBar->SetPercent(Percent);
 
-		UE_LOG(LogTemp, Warning, TEXT("UpdateEnemyHpBar: NewEnemyCurrentHp = %f, Percent = %f"), NewEnemyCurrentHp, Percent);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("UpdateEnemyHpBar: EnemyHpProgressBar is null"));
-	}
-
+	
 }
 
 void UEnemyHpBarWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-
-	if (!EnemyHpProgressBar)
-	{
-		UE_LOG(LogTemp, Error, TEXT("UpdateEnemyHpBar: EnemyHpProgressBar is null"));
-		return;
-	}
 
 	EnemyHpProgressBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("EnemyHpProgressBar")));
 	ensure(EnemyHpProgressBar);

@@ -9,6 +9,9 @@
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/RPCharacterStatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "UI/CharacterHpBarWidget.h"
+#include "HUD/RPHUD.h"
+
 
 
 APlayerCharacter::APlayerCharacter()
@@ -168,7 +171,13 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	Stat->ApplyDamage(DamageAmount);
+
+	
+	if (Stat->GetCurrentHp() <= 0.0f)
+	{
+		SetDead();
+	}
 
 	return DamageAmount;
 }

@@ -53,6 +53,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	EnemyHpBar = CreateDefaultSubobject<URPWidgetComponent>(TEXT("EnemyWidget"));
 	EnemyHpBar->SetupAttachment(GetMesh());
 	EnemyHpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+
 	static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/UI/EnemyHpBar.EnemyHpBar_C"));
 	if (HpBarWidgetRef.Class)
 	{
@@ -245,8 +246,6 @@ void AEnemyCharacterBase::SetupEnemyWidget(URPUserWidget* InUserWidget)
 		float MaxHp = EnemyStat->EnemyGetMaxHp();
 		float CurrentHp = EnemyStat->EnemyGetCurrentHp();
 
-		UE_LOG(LogTemp, Warning, TEXT("SetupEnemyWidget: MaxHp = %f, CurrentHp = %f"), MaxHp, CurrentHp);
-
 		EnemyHpBarWidget->EnemySetMaxHp(MaxHp);
 		EnemyHpBarWidget->UpdateEnemyHpBar(CurrentHp);
 
@@ -255,9 +254,6 @@ void AEnemyCharacterBase::SetupEnemyWidget(URPUserWidget* InUserWidget)
 		//EnemyHpBarWidget->UpdateEnemyHpBar(EnemyStat->EnemyGetCurrentHp());
 		EnemyStat->OnEnemyHpChanged.AddUObject(EnemyHpBarWidget, &UEnemyHpBarWidget::UpdateEnemyHpBar);
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("SetupEnemyWidget: Failed to cast InUserWidget to UEnemyHpBarWidget"));
-	}
+
 }
 

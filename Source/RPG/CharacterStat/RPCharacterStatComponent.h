@@ -22,7 +22,7 @@ public:
 	FOnHpChangedDelegate OnHpChanged;
 
 	FORCEINLINE float GetMaxHp() { return MaxHp; }
-	FORCEINLINE float GeCurrentHp() { return CurrentHp; }
+	FORCEINLINE float GetCurrentHp() { return CurrentHp; }
 	float ApplyDamage(float InDamage);
 
 protected:

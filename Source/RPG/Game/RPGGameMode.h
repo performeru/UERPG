@@ -19,10 +19,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	// 수정부분 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG")
-	UUserWidget* CurrentWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG")
-	TSubclassOf<UUserWidget> HUDWidget;
 };
