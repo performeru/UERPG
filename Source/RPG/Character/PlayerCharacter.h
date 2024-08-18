@@ -6,31 +6,6 @@
 #include "Interface/RPAnimationAttackInterface.h"
 #include "PlayerCharacter.generated.h"
 
-USTRUCT(BlueprintType)
-struct FCharacterInfo : public FTableRowBase
-{
-	GENERATED_BODY()
-
-public:
-	FCharacterInfo()
-	{
-		CharacterName = FText::FromString("Name");
-		CharacterLevel = 1;
-	}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName CharacterID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FText CharacterName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture2D* CharacterThumbnail;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 CharacterLevel;
-
-};
 
 UCLASS()
 class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
@@ -81,6 +56,16 @@ protected:
 	// Stat Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
 	TObjectPtr<class URPCharacterStatComponent> Stat;
+public:
+	// Getter for Stat
+	UFUNCTION(BlueprintCallable, Category = "Stat")
+	URPCharacterStatComponent* GetStat() const { return Stat; }
+	
+	// Health UI
+	UPROPERTY()
+	TObjectPtr<class UCharacterHpInfoWidget> CharacterHpInfoWidget;
+
+	void UpdateHealthUI(float CurrentHealth);
 protected:
 	// Dead Section
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
@@ -89,4 +74,5 @@ protected:
 	void SetDead();
 	float DeadEventDelayTime = 2.0f;
 	void PlayDeadAnimation();
+
 };

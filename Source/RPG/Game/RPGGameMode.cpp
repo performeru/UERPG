@@ -2,8 +2,7 @@
 
 
 #include "Game/RPGGameMode.h"
-#include "Blueprint/UserWidget.h"
-#include "HUD/RPHUD.h"
+#include "Character/PlayerCharacter.h"
 
 
 void ARPGGameMode::BeginPlay()
@@ -15,6 +14,10 @@ void ARPGGameMode::BeginPlay()
 
 ARPGGameMode::ARPGGameMode()
 {
-	
+    static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/Blueprint/Character/BP_Player.BP_Player_C")); 
+    if (DefaultPawnClassRef.Class)
+    {
+        DefaultPawnClass = DefaultPawnClassRef.Class;
+    }
 
 }

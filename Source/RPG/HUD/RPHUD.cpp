@@ -3,19 +3,18 @@
 
 #include "HUD/RPHUD.h"
 #include "Blueprint/UserWidget.h"
-#include "UI/CharacterHpBarWidget.h"
+#include "UI/CharacterHpInfoWidget.h"
+#include "Character/PlayerCharacter.h"
+#include "CharacterStat/RPCharacterStatComponent.h"
+
 
 ARPHUD::ARPHUD()
 {
-    static ConstructorHelpers::FClassFinder<UUserWidget> CharacterHpBarWidgetClassRef(TEXT("/Game/UI/CharacterHpBar.CharacterHpBar_C"));
-    if (CharacterHpBarWidgetClassRef.Class)
-    {
-        CharacterHpBarWidgetClass = CharacterHpBarWidgetClassRef.Class;
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to find CharacterHpBarWidgetClass! Check the path."));
-    }
+	static ConstructorHelpers::FClassFinder<UUserWidget>CharacterHpInfoWidgetRef(TEXT("/Game/UI/UI_Character.UI_Character_C"));
+	if (CharacterHpInfoWidgetRef.Succeeded())
+	{
+		CharacterHpInfoWidgetClass = CharacterHpInfoWidgetRef.Class;
+	}
 
 }
 
@@ -23,19 +22,33 @@ void ARPHUD::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (!CharacterHpBarWidgetClass)
-    {
-        UE_LOG(LogTemp, Error, TEXT("CharacterHpBarWidgetClass is nullptr! Please check if the Blueprint class is assigned correctly in the HUD."));
-        return;
-    }
+	if (CharacterHpInfoWidgetClass)
+	{
+		CharacterHpInfoWidget = CreateWidget<UCharacterHpInfoWidget>(GetWorld(), CharacterHpInfoWidgetClass);
 
-    CharacterHpBarWidget = CreateWidget<UCharacterHpBarWidget>(GetWorld(), CharacterHpBarWidgetClass);
-    if (CharacterHpBarWidget)
-    {
-        CharacterHpBarWidget->AddToViewport();
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to create CharacterHpBarWidget!"));
-    }
+		if(CharacterHpInfoWidget)
+		{
+			CharacterHpInfoWidget->AddToViewport();
+
+			if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetOwningPawn()))
+			{
+				PlayerCharacter->CharacterHpInfoWidget = CharacterHpInfoWidget;
+
+				URPCharacterStatComponent* Stat = PlayerCharacter->GetStat();
+				if (Stat)
+				{
+					// Initialize the health UI
+					PlayerCharacter->UpdateHealthUI(Stat->GetCurrentHp());
+				}
+			}
+		}
+	}
+}
+
+void ARPHUD::UpdateHealthBar(float HealthRatio)
+{
+	if (CharacterHpInfoWidget)
+	{
+		CharacterHpInfoWidget->SetHealthBarPercent(HealthRatio);
+	}
 }

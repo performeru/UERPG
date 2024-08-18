@@ -38,10 +38,13 @@ void URPCharacterStatComponent::BeginPlay()
 
 void URPCharacterStatComponent::SetHp(float NewHp)
 {
+	
+
 	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, MaxHp);
 
 	OnHpChanged.Broadcast(CurrentHp);
 
+	
 }
 
 

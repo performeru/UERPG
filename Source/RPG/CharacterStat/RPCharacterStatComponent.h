@@ -38,5 +38,4 @@ protected:
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
 	float CurrentHp;
 
-
 };

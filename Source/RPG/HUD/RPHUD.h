@@ -17,12 +17,17 @@ class RPG_API ARPHUD : public AHUD
 public:
 	ARPHUD();
 
+public:
 	virtual void BeginPlay() override;
 
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<class UCharacterHpBarWidget> CharacterHpBarWidgetClass;
+	UFUNCTION(BlueprintCallable)
+	void UpdateHealthBar(float HealthRatio);
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<class UUserWidget> CharacterHpInfoWidgetClass;
+
+private:
 	UPROPERTY()
-	UCharacterHpBarWidget* CharacterHpBarWidget;
+	TObjectPtr<class UCharacterHpInfoWidget> CharacterHpInfoWidget;
 };

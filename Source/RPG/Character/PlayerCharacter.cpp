@@ -9,8 +9,9 @@
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/RPCharacterStatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "UI/CharacterHpBarWidget.h"
 #include "HUD/RPHUD.h"
+#include "UI/CharacterHpInfoWidget.h"
+
 
 
 
@@ -24,17 +25,6 @@ APlayerCharacter::APlayerCharacter()
 	FollowCmaera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCmaera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCmaera->bUsePawnControlRotation = false;
-
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(RootComponent);
-	//CameraBoom->TargetArmLength = 400.f;
-	//CameraBoom->SocketOffset = FVector(0.f, 0.f, 50.f); // 카메라 높이 조절
-	//CameraBoom->bUsePawnControlRotation = false; // 카메라를 직접 제어하도록 설정
-
-	//FollowCmaera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	//FollowCmaera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	//FollowCmaera->bUsePawnControlRotation = false; // 카메라를 직접 제어하도록 설정
-
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard'"));
 	if (CharacterMeshRef.Object)
@@ -85,10 +75,24 @@ APlayerCharacter::APlayerCharacter()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
+	// 체력 상태 컴포넌트 초기화
+	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("StatComponent"));
 
-	// Stat Component
-	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("Stat"));
+}
 
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			SubSystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+
+	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateHealthUI);
 }
 
 // Dead
@@ -97,20 +101,6 @@ void APlayerCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::SetDead);
-}
-
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if(APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			SubSystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -173,6 +163,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
 	Stat->ApplyDamage(DamageAmount);
 
+	UpdateHealthUI(Stat->GetCurrentHp());
 	
 	if (Stat->GetCurrentHp() <= 0.0f)
 	{
@@ -201,6 +192,19 @@ void APlayerCharacter::PlayDeadAnimation()
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
 }
 
+void APlayerCharacter::UpdateHealthUI(float CurrentHealth)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UpdateHealthUI Called: %f"), CurrentHealth);
+	if(CharacterHpInfoWidget)
+	{
+		/*float HealthPercent = CurrentHealth / Stat->GetMaxHp();
+		CharacterHpInfoWidget->SetHealthBarPercent(HealthPercent);*/
+		float HealthPercent = Stat->GetMaxHp() > 0 ? CurrentHealth / Stat->GetMaxHp() : 0.0f;
+		CharacterHpInfoWidget->SetHealthBarPercent(HealthPercent);
+
+		UE_LOG(LogTemp, Warning, TEXT("Health UI Updated: %f"), HealthPercent);
+	}
+}
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
