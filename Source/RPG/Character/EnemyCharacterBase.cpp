@@ -63,6 +63,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 		EnemyHpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
+	bIsDead = false;
 }
 
 void AEnemyCharacterBase::PostInitializeComponents()
@@ -105,30 +106,55 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 
 void AEnemyCharacterBase::SetDead()
 {
+	if (bIsDead)
+	{
+		return; // 이미 죽은 상태라면 추가 처리를 하지 않음
+	}
+
+	bIsDead = true;
+
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
+
+	FTimerHandle DeadTimerHanlde;
+	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda([&]() { Destroy(); }), EnemyDeadEventDelayTime, false);
 }
 
 void AEnemyCharacterBase::PlayDeadAnimation()
 {
-	UAnimInstance* AnimInstanc = GetMesh()->GetAnimInstance();
-	AnimInstanc->StopAllMontages(0.0f);
-	AnimInstanc->Montage_Play(EnemyDeadMontage, 3.0f);
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		if (AnimInstance->Montage_IsPlaying(AttackActionMontage))
+		{
+			AnimInstance->Montage_Stop(0.1f, AttackActionMontage);  // 공격 몽타주 중지
+		}
+		AnimInstance->Montage_Play(EnemyDeadMontage, 1.0f);  // 데드 몽타주 재생
+	}
 }
 
 void AEnemyCharacterBase::ProcessAttackAction()
 {
+	if (bIsDead)
+	{
+		return;  // 죽은 상태라면 공격을 무시함
+	}
+
 	if (CurrentAttack == 0)
 	{
 		AttackActionBegin();
 		return;
 	}
-
 }
 
 void AEnemyCharacterBase::AttackActionBegin()
 {
+	if (bIsDead)
+	{
+		return;  // 죽은 상태라면 공격 시작을 무시
+	}
+
 	CurrentAttack = 1;
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -178,6 +204,11 @@ void AEnemyCharacterBase::SetAttackCheckTimer()
 
 void AEnemyCharacterBase::AttackCheck()
 {
+	if (bIsDead)
+	{
+		return;  // 죽은 상태라면 공격 체크를 중단함
+	}
+
 	AttackTimerHandle.Invalidate();
 	if (HasNextAttackAction)
 	{

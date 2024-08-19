@@ -98,4 +98,6 @@ protected:
 	TObjectPtr<class URPWidgetComponent> EnemyHpBar;
 
 	virtual void SetupEnemyWidget(class URPUserWidget* InUserWidget) override;
+private:
+	bool bIsDead;
 };

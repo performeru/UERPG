@@ -37,7 +37,6 @@ void ARPHUD::BeginPlay()
 				URPCharacterStatComponent* Stat = PlayerCharacter->GetStat();
 				if (Stat)
 				{
-					// Initialize the health UI
 					PlayerCharacter->UpdateHealthUI(Stat->GetCurrentHp());
 				}
 			}

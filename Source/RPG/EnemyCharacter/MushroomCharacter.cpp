@@ -37,10 +37,6 @@ AMushroomCharacter::AMushroomCharacter()
 void AMushroomCharacter::SetDead()
 {
 	Super::SetDead();
-
-	FTimerHandle DeadTimerHanlde;
-	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda( [&]() { Destroy(); }), EnemyDeadEventDelayTime, false);
-
 }
 
 void AMushroomCharacter::PlayDeadAnimation()
