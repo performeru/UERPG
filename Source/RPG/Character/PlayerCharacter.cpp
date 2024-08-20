@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "CharacterControlDataAsset.h"
 #include "InputAction.h"
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/RPCharacterStatComponent.h"
@@ -12,19 +13,16 @@
 #include "HUD/RPHUD.h"
 #include "UI/CharacterHpInfoWidget.h"
 
-
-
-
 APlayerCharacter::APlayerCharacter()
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.f;
+	CameraBoom->TargetArmLength = 300.f;
 	CameraBoom->bUsePawnControlRotation = true;
 
-	FollowCmaera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCmaera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCmaera->bUsePawnControlRotation = false;
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard'"));
 	if (CharacterMeshRef.Object)
@@ -45,18 +43,42 @@ APlayerCharacter::APlayerCharacter()
 		DefaultMappingContext = Mapping.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Move(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Move.IA_Move'"));
-	if(IA_Move.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputChangeActionControlRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/ChangeControl.ChangeControl'"));
+	if (nullptr != InputChangeActionControlRef.Object)
 	{
-		MoveAction = IA_Move.Object;
+		ChangeControlAction = InputChangeActionControlRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Look(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Look.IA_Look'"));
-	if(IA_Look.Object)
+	static ConstructorHelpers::FObjectFinder<UCharacterControlDataAsset> ShoulderDataRef(TEXT("/Script/RPG.CharacterControlDataAsset'/Game/CharacterControl/Shoulder.Shoulder'"));
+	if (ShoulderDataRef.Object)
 	{
-		LookAction = IA_Look.Object;
+		CharacterControlManager.Add(ECharacterControlType::Shoulder, ShoulderDataRef.Object);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UCharacterControlDataAsset> QuaterDataRef(TEXT("/Script/RPG.CharacterControlDataAsset'/Game/CharacterControl/Quater.Quater'"));
+	if (QuaterDataRef.Object)
+	{
+		CharacterControlManager.Add(ECharacterControlType::Quater, QuaterDataRef.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionShoulderMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_ShoulderMove.IA_ShoulderMove'"));
+	if (nullptr != InputActionShoulderMoveRef.Object)
+	{
+		ShoulderMoveAction = InputActionShoulderMoveRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionShoulderLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_ShoulderLook.IA_ShoulderLook'"));
+	if (nullptr != InputActionShoulderLookRef.Object)
+	{
+		ShoulderLookAction = InputActionShoulderLookRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionQuaterMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_QuaterMove.IA_QuaterMove'"));
+	if (nullptr != InputActionQuaterMoveRef.Object)
+	{
+		QuaterMoveAction = InputActionQuaterMoveRef.Object;
+	}
+	
 	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Jump(TEXT("/Script/EnhancedInput.InputAction'/Game/Blueprint/InputMapping/IA_Jump.IA_Jump'"));
 	if (IA_Jump.Object)
 	{
@@ -75,6 +97,8 @@ APlayerCharacter::APlayerCharacter()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
+	CurrentCharacterControlType = ECharacterControlType::Quater;
+
 	// 체력 상태 컴포넌트 초기화
 	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("StatComponent"));
 
@@ -84,13 +108,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			SubSystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	SetCharacterControl(CurrentCharacterControlType);
 
 	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateHealthUI);
 }
@@ -103,7 +121,7 @@ void APlayerCharacter::PostInitializeComponents()
 	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::SetDead);
 }
 
-void APlayerCharacter::Move(const FInputActionValue& Value)
+void APlayerCharacter::ShoulderMove(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -114,14 +132,52 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
+
+	UE_LOG(LogTemp, Warning, TEXT("Move - Rotation: %s, ForwardDirection: %s, RightDirection: %s"), *Rotation.ToString(), *ForwardDirection.ToString(), *RightDirection.ToString());
 }
 
-void APlayerCharacter::Look(const FInputActionValue& Value)
+void APlayerCharacter::ShoulderLook(const FInputActionValue& Value)
 {
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	AddControllerYawInput(LookAxisVector.X);
-	AddControllerPitchInput(LookAxisVector.Y);
+	float InputSizeSquared = MovementVector.SquaredLength();
+	float MovementVectorSize = 1.0f;
+	float MovementVectorSizeSquared = MovementVector.SquaredLength();
+	if (MovementVectorSizeSquared > 1.0f)
+	{
+		MovementVector.Normalize();
+		MovementVectorSizeSquared = 1.0f;
+	}
+	else
+	{
+		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
+	}
+
+	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
+	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
+	AddMovementInput(MoveDirection, MovementVectorSize);
+}
+
+void APlayerCharacter::QuaterMove(const FInputActionValue& Value)
+{
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	float InputSizeSquared = MovementVector.SquaredLength();
+	float MovementVectorSize = 1.0f;
+	float MovementVectorSizeSquared = MovementVector.SquaredLength();
+	if (MovementVectorSizeSquared > 1.0f)
+	{
+		MovementVector.Normalize();
+		MovementVectorSizeSquared = 1.0f;
+	}
+	else
+	{
+		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
+	}
+
+	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
+	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
+	AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
 void APlayerCharacter::Attack()
@@ -212,11 +268,68 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+		EnhancedInputComponent->BindAction(ShoulderMoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ShoulderMove);
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::QuaterMove);
+		EnhancedInputComponent->BindAction(ShoulderLookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ShoulderLook);
+		EnhancedInputComponent->BindAction(ChangeControlAction, ETriggerEvent::Triggered, this, &APlayerCharacter::ChangeCharacterControl);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopJumping);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Attack);
 	}
+}
+
+void APlayerCharacter::SetCharacterControlData(const UCharacterControlDataAsset* CharacterControlData)
+{
+	if (CharacterControlData)
+	{
+		// Pawn 
+		bUseControllerRotationYaw = CharacterControlData->bUseControllerRotationYaw;
+
+		// CharacterMovement
+		GetCharacterMovement()->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
+		GetCharacterMovement()->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
+		GetCharacterMovement()->RotationRate = CharacterControlData->RotationRate;
+
+		CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
+		CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
+		CameraBoom->bUsePawnControlRotation = CharacterControlData->bUsePawnControlRotation;
+		CameraBoom->bInheritPitch = CharacterControlData->bInheritPitch;
+		CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
+		CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
+		CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
+	}
+}
+
+void APlayerCharacter::ChangeCharacterControl()
+{
+	if (CurrentCharacterControlType == ECharacterControlType::Quater)
+	{
+		SetCharacterControl(ECharacterControlType::Shoulder);
+	}
+	else if (CurrentCharacterControlType == ECharacterControlType::Shoulder)
+	{
+		SetCharacterControl(ECharacterControlType::Quater);
+	}
+}
+
+void APlayerCharacter::SetCharacterControl(ECharacterControlType NewCharacterControlType)
+{
+	UCharacterControlDataAsset* NewCharacterControl = CharacterControlManager[NewCharacterControlType];
+	check(NewCharacterControl);
+
+	SetCharacterControlData(CharacterControlManager[NewCharacterControlType]);
+
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	{
+		Subsystem->ClearAllMappings();
+		UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext;
+		if (NewMappingContext)
+		{
+			Subsystem->AddMappingContext(NewMappingContext, 0);
+		}
+	}
+
+	CurrentCharacterControlType = NewCharacterControlType;
 }
 

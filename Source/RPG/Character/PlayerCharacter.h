@@ -6,6 +6,12 @@
 #include "Interface/RPAnimationAttackInterface.h"
 #include "PlayerCharacter.generated.h"
 
+UENUM()
+enum class ECharacterControlType : uint8
+{
+	Shoulder,
+	Quater
+};
 
 UCLASS()
 class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
@@ -26,17 +32,23 @@ protected:
 	TObjectPtr<class USpringArmComponent> CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<class UCameraComponent> FollowCmaera;
+	TObjectPtr<class UCameraComponent> FollowCamera;
 protected:
 	// Input
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> MoveAction;
+	TObjectPtr<class UInputAction> ChangeControlAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> LookAction;
+	TObjectPtr<class UInputAction> ShoulderMoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ShoulderLookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> QuaterMoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> JumpAction;
@@ -45,8 +57,19 @@ protected:
 	TObjectPtr<class UInputAction> AttackAction;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
+	void SetCharacterControlData(const class UCharacterControlDataAsset* CharacterControlData);
+	void ChangeCharacterControl();
+	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
+
+	UPROPERTY(EditAnywhere, Category = CharacterControl, meta = (AllowPrivateAccess = "true"))
+	TMap<ECharacterControlType, class UCharacterControlDataAsset*> CharacterControlManager;
+
+	void ShoulderMove(const FInputActionValue& Value);
+	void ShoulderLook(const FInputActionValue& Value);
+
+	ECharacterControlType CurrentCharacterControlType;
+
+	void QuaterMove(const FInputActionValue& Value);
 	void Attack();
 
 	virtual void AttackHitCheck() override;
