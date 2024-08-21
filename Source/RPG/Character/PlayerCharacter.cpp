@@ -17,7 +17,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.f;
+	CameraBoom->TargetArmLength = 400.f;
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -108,6 +108,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+
 	SetCharacterControl(CurrentCharacterControlType);
 
 	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateHealthUI);
@@ -138,6 +139,16 @@ void APlayerCharacter::ShoulderMove(const FInputActionValue& Value)
 
 void APlayerCharacter::ShoulderLook(const FInputActionValue& Value)
 {
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	const float Sensitivity = 0.03f;
+
+	AddControllerYawInput(LookAxisVector.X * Sensitivity);
+	AddControllerPitchInput(LookAxisVector.Y * Sensitivity);
+}
+
+void APlayerCharacter::QuaterMove(const FInputActionValue& Value)
+{
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	float InputSizeSquared = MovementVector.SquaredLength();
@@ -156,31 +167,6 @@ void APlayerCharacter::ShoulderLook(const FInputActionValue& Value)
 	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
 	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
 	AddMovementInput(MoveDirection, MovementVectorSize);
-	
-}
-
-void APlayerCharacter::QuaterMove(const FInputActionValue& Value)
-{
-	
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	// 카메라의 회전을 가져옵니다.
-	const FRotator Rotation = Controller->GetControlRotation();
-	UE_LOG(LogTemp, Warning, TEXT("Control Rotation: Pitch=%f, Yaw=%f, Roll=%f"), Rotation.Pitch, Rotation.Yaw, Rotation.Roll);
-	UE_LOG(LogTemp, Warning, TEXT("MovementVector: X=%f, Y=%f"), MovementVector.X, MovementVector.Y);
-	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
-
-	// 회전을 적용하여 이동 벡터를 변환합니다.
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-	UE_LOG(LogTemp, Warning, TEXT("ForwardDirection: X=%f, Y=%f, Z=%f"), ForwardDirection.X, ForwardDirection.Y, ForwardDirection.Z);
-	UE_LOG(LogTemp, Warning, TEXT("RightDirection: X=%f, Y=%f, Z=%f"), RightDirection.X, RightDirection.Y, RightDirection.Z);
-
-	UE_LOG(LogTemp, Warning, TEXT("Applying movement input: Forward=%f, Right=%f"), MovementVector.X, MovementVector.Y);
-
-	AddMovementInput(ForwardDirection, MovementVector.X);
-	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
 void APlayerCharacter::Attack()
@@ -283,17 +269,13 @@ void APlayerCharacter::SetCharacterControlData(const UCharacterControlDataAsset*
 {
 	if(CharacterControlData)
 	{
-		if (CharacterControlData)
-		{
-			CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
-			CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
-			CameraBoom->bUsePawnControlRotation = false; // 캐릭터 회전과 카메라 회전을 분리
-			CameraBoom->bInheritPitch = false; // 카메라의 피치(상하) 각도 고정
-			CameraBoom->bInheritYaw = false; // 카메라의 요(좌우) 각도 고정
-			CameraBoom->bInheritRoll = false;
-			CameraBoom->bDoCollisionTest = true; // 카메라가 충돌할 경우의 처리
-		}
-		
+		CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
+		CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
+		CameraBoom->bUsePawnControlRotation = CharacterControlData->bUsePawnControlRotation;
+		CameraBoom->bInheritPitch = CharacterControlData->bInheritPitch;
+		CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
+		CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
+		CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
 	}
 
 }

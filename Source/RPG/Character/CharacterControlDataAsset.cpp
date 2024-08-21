@@ -3,4 +3,7 @@
 
 #include "Character/CharacterControlDataAsset.h"
 
-UCharacterControlDataAsset::UCharacterControlDataAsset(){}
+UCharacterControlDataAsset::UCharacterControlDataAsset()
+{
+	TargetArmLength = 500.f;
+}
