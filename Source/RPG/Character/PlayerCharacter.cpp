@@ -127,13 +127,13 @@ void APlayerCharacter::ShoulderMove(const FInputActionValue& Value)
 
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
+
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 	AddMovementInput(ForwardDirection, MovementVector.X);
 	AddMovementInput(RightDirection, MovementVector.Y);
 
-	UE_LOG(LogTemp, Warning, TEXT("Move - Rotation: %s, ForwardDirection: %s, RightDirection: %s"), *Rotation.ToString(), *ForwardDirection.ToString(), *RightDirection.ToString());
 }
 
 void APlayerCharacter::ShoulderLook(const FInputActionValue& Value)
@@ -156,28 +156,31 @@ void APlayerCharacter::ShoulderLook(const FInputActionValue& Value)
 	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
 	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
 	AddMovementInput(MoveDirection, MovementVectorSize);
+	
 }
 
 void APlayerCharacter::QuaterMove(const FInputActionValue& Value)
 {
+	
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	float InputSizeSquared = MovementVector.SquaredLength();
-	float MovementVectorSize = 1.0f;
-	float MovementVectorSizeSquared = MovementVector.SquaredLength();
-	if (MovementVectorSizeSquared > 1.0f)
-	{
-		MovementVector.Normalize();
-		MovementVectorSizeSquared = 1.0f;
-	}
-	else
-	{
-		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
-	}
+	// 카메라의 회전을 가져옵니다.
+	const FRotator Rotation = Controller->GetControlRotation();
+	UE_LOG(LogTemp, Warning, TEXT("Control Rotation: Pitch=%f, Yaw=%f, Roll=%f"), Rotation.Pitch, Rotation.Yaw, Rotation.Roll);
+	UE_LOG(LogTemp, Warning, TEXT("MovementVector: X=%f, Y=%f"), MovementVector.X, MovementVector.Y);
+	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
 
-	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
-	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
-	AddMovementInput(MoveDirection, MovementVectorSize);
+	// 회전을 적용하여 이동 벡터를 변환합니다.
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	UE_LOG(LogTemp, Warning, TEXT("ForwardDirection: X=%f, Y=%f, Z=%f"), ForwardDirection.X, ForwardDirection.Y, ForwardDirection.Z);
+	UE_LOG(LogTemp, Warning, TEXT("RightDirection: X=%f, Y=%f, Z=%f"), RightDirection.X, RightDirection.Y, RightDirection.Z);
+
+	UE_LOG(LogTemp, Warning, TEXT("Applying movement input: Forward=%f, Right=%f"), MovementVector.X, MovementVector.Y);
+
+	AddMovementInput(ForwardDirection, MovementVector.X);
+	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
 void APlayerCharacter::Attack()
@@ -250,7 +253,6 @@ void APlayerCharacter::PlayDeadAnimation()
 
 void APlayerCharacter::UpdateHealthUI(float CurrentHealth)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UpdateHealthUI Called: %f"), CurrentHealth);
 	if(CharacterHpInfoWidget)
 	{
 		/*float HealthPercent = CurrentHealth / Stat->GetMaxHp();
@@ -258,7 +260,6 @@ void APlayerCharacter::UpdateHealthUI(float CurrentHealth)
 		float HealthPercent = Stat->GetMaxHp() > 0 ? CurrentHealth / Stat->GetMaxHp() : 0.0f;
 		CharacterHpInfoWidget->SetHealthBarPercent(HealthPercent);
 
-		UE_LOG(LogTemp, Warning, TEXT("Health UI Updated: %f"), HealthPercent);
 	}
 }
 
@@ -280,29 +281,26 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::SetCharacterControlData(const UCharacterControlDataAsset* CharacterControlData)
 {
-	if (CharacterControlData)
+	if(CharacterControlData)
 	{
-		// Pawn 
-		bUseControllerRotationYaw = CharacterControlData->bUseControllerRotationYaw;
-
-		// CharacterMovement
-		GetCharacterMovement()->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
-		GetCharacterMovement()->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
-		GetCharacterMovement()->RotationRate = CharacterControlData->RotationRate;
-
-		CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
-		CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
-		CameraBoom->bUsePawnControlRotation = CharacterControlData->bUsePawnControlRotation;
-		CameraBoom->bInheritPitch = CharacterControlData->bInheritPitch;
-		CameraBoom->bInheritYaw = CharacterControlData->bInheritYaw;
-		CameraBoom->bInheritRoll = CharacterControlData->bInheritRoll;
-		CameraBoom->bDoCollisionTest = CharacterControlData->bDoCollisionTest;
+		if (CharacterControlData)
+		{
+			CameraBoom->TargetArmLength = CharacterControlData->TargetArmLength;
+			CameraBoom->SetRelativeRotation(CharacterControlData->RelativeRotation);
+			CameraBoom->bUsePawnControlRotation = false; // 캐릭터 회전과 카메라 회전을 분리
+			CameraBoom->bInheritPitch = false; // 카메라의 피치(상하) 각도 고정
+			CameraBoom->bInheritYaw = false; // 카메라의 요(좌우) 각도 고정
+			CameraBoom->bInheritRoll = false;
+			CameraBoom->bDoCollisionTest = true; // 카메라가 충돌할 경우의 처리
+		}
+		
 	}
+
 }
 
 void APlayerCharacter::ChangeCharacterControl()
 {
-	if (CurrentCharacterControlType == ECharacterControlType::Quater)
+	if(CurrentCharacterControlType == ECharacterControlType::Quater)
 	{
 		SetCharacterControl(ECharacterControlType::Shoulder);
 	}
@@ -317,10 +315,10 @@ void APlayerCharacter::SetCharacterControl(ECharacterControlType NewCharacterCon
 	UCharacterControlDataAsset* NewCharacterControl = CharacterControlManager[NewCharacterControlType];
 	check(NewCharacterControl);
 
-	SetCharacterControlData(CharacterControlManager[NewCharacterControlType]);
+	SetCharacterControlData(NewCharacterControl); // 카메라 및 캐릭터 설정 업데이트
 
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		Subsystem->ClearAllMappings();
 		UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext;
@@ -331,5 +329,6 @@ void APlayerCharacter::SetCharacterControl(ECharacterControlType NewCharacterCon
 	}
 
 	CurrentCharacterControlType = NewCharacterControlType;
+
 }
 
