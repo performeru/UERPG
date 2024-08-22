@@ -18,6 +18,8 @@ AItemBox::AItemBox()
 	Effect->SetupAttachment(Trigger);
 
 	Trigger->SetCollisionProfileName(TEXT("RPTrigger"));
+	Trigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
+	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AItemBox::OnOverlapBegin);
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BoxMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Props/Box.Box'"));
 	if (BoxMeshRef.Object)
@@ -33,6 +35,19 @@ AItemBox::AItemBox()
 		Effect->SetTemplate(EffectRef.Object);
 		Effect->bAutoActivate = false;
 	}
+}
+
+void AItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
+{
+	Effect->Activate(true);
+	Mesh->SetHiddenInGame(true);
+	SetActorEnableCollision(false);
+	Effect->OnSystemFinished.AddDynamic(this, &AItemBox::OnEffectFinished);
+}
+
+void AItemBox::OnEffectFinished(UParticleSystemComponent* ParticleSystem)
+{
+	Destroy();
 }
 
 
