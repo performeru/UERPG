@@ -10,6 +10,7 @@
 #include "CharacterStat/RPEnemyStatComponent.h"
 #include "UI/RPWidgetComponent.h"
 #include"UI/EnemyHpBarWidget.h"
+#include "Item/ItemBox.h"
 
 
 // Sets default values
@@ -116,6 +117,12 @@ void AEnemyCharacterBase::SetDead()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
+
+	// 아이템 박스 생성
+	FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, 50.0f); // 적의 위치 위에 아이템 박스를 스폰
+	FRotator SpawnRotation = FRotator::ZeroRotator;
+	FActorSpawnParameters SpawnParams;
+	GetWorld()->SpawnActor<AItemBox>(AItemBox::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
 
 	FTimerHandle DeadTimerHanlde;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda([&]() { Destroy(); }), EnemyDeadEventDelayTime, false);
