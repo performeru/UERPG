@@ -51,17 +51,20 @@ void AItemBox::PostInitializeComponents()
 	Manager.GetPrimaryAssetIdList(TEXT("WeaponItemData"), WeaponAssets); // Weapon
 	
 	Assets.Append(WeaponAssets);
-	ensure(Assets.Num() > 0);
-
-	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
-	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
-	if (AssetPtr.IsPending())
+	
+	if (Assets.Num() > 0)
 	{
-		AssetPtr.LoadSynchronous();
-	}
-	Item = Cast<UItemDataAsset>(AssetPtr.Get());
-	ensure(Item);
+		int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+		FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
 
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		Item = Cast<UItemDataAsset>(AssetPtr.Get());
+	}
+
+	
 }
 
 void AItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)

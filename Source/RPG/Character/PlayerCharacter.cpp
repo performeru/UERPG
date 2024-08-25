@@ -106,6 +106,7 @@ APlayerCharacter::APlayerCharacter()
 
 	// Item Action
 	TakeItemAction.Add(FTakeItemDelegate(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
+	TakeItemAction.Add(FTakeItemDelegate(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::DrinkPotion)));
 
 	// Weapon Component
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
@@ -332,7 +333,7 @@ void APlayerCharacter::TakeItem(UItemDataAsset* InItemData)
 
 void APlayerCharacter::DrinkPotion(UItemDataAsset* InItemData)
 {
-	
+	UE_LOG(LogTemp, Log, TEXT("HP READ"));
 }
 
 void APlayerCharacter::EquipWeapon(UItemDataAsset* InItemData)
