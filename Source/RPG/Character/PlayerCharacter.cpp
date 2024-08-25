@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/RPHUD.h"
 #include "UI/CharacterHpInfoWidget.h"
+#include "Item/WeaponItemData.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -102,6 +103,13 @@ APlayerCharacter::APlayerCharacter()
 	// 체력 상태 컴포넌트 초기화
 	Stat = CreateDefaultSubobject<URPCharacterStatComponent>(TEXT("StatComponent"));
 
+
+	// Item Action
+	TakeItemAction.Add(FTakeItemDelegate(FOnTakeItemDelegate::CreateUObject(this, &APlayerCharacter::EquipWeapon)));
+
+	// Weapon Component
+	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -181,7 +189,7 @@ void APlayerCharacter::AttackHitCheck()
 
 	const float AttackRange = 40.0f;
 	const float AttackRadius = 50.0f;
-	const float AttackDamage = 30.0f;
+	const float AttackDamage = 100.0f;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
@@ -314,3 +322,29 @@ void APlayerCharacter::SetCharacterControl(ECharacterControlType NewCharacterCon
 
 }
 
+void APlayerCharacter::TakeItem(UItemDataAsset* InItemData)
+{
+	if(InItemData)
+	{
+		TakeItemAction[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+	}
+}
+
+void APlayerCharacter::DrinkPotion(UItemDataAsset* InItemData)
+{
+	
+}
+
+void APlayerCharacter::EquipWeapon(UItemDataAsset* InItemData)
+{
+	UWeaponItemData* WeaponItemAsset = Cast<UWeaponItemData>(InItemData);
+
+	if(InItemData)
+	{
+		if(WeaponItemAsset->WeaponMesh.IsPending())
+		{
+			WeaponItemAsset->WeaponMesh.LoadSynchronous();
+		}
+		Weapon->SetSkeletalMesh(WeaponItemAsset->WeaponMesh.Get());
+	}
+}

@@ -4,6 +4,7 @@
 #include "Character/CharacterBase.h"
 #include "InputActionValue.h"
 #include "Interface/RPAnimationAttackInterface.h"
+#include "Interface/ItemInterface.h"
 #include "PlayerCharacter.generated.h"
 
 UENUM()
@@ -13,8 +14,21 @@ enum class ECharacterControlType : uint8
 	Quater
 };
 
+DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UItemDataAsset* /*InItemData*/);
+
+USTRUCT(BlueprintType)
+struct FTakeItemDelegate
+{
+	GENERATED_BODY()
+
+	FTakeItemDelegate(){}
+	FTakeItemDelegate(const FOnTakeItemDelegate& InItemDelegate) : ItemDelegate(InItemDelegate) {}
+
+	FOnTakeItemDelegate ItemDelegate;
+};
+
 UCLASS()
-class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface
+class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface, public IItemInterface
 {
 	GENERATED_BODY()
 
@@ -100,5 +114,17 @@ protected:
 	void SetDead();
 	float DeadEventDelayTime = 2.0f;
 	void PlayDeadAnimation();
+
+protected:
+	// Item Section
+	UPROPERTY()
+	TArray<FTakeItemDelegate> TakeItemAction;
+
+	virtual void TakeItem(class UItemDataAsset* InItemData) override;
+	virtual void DrinkPotion(class UItemDataAsset* InItemData);
+	virtual void EquipWeapon(class UItemDataAsset* InItemData);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkeletalMeshComponent> Weapon;
 
 };

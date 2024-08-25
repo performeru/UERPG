@@ -5,6 +5,9 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Interface/ItemInterface.h"
+#include "Engine/AssetManager.h"
+#include "ItemDataAsset.h"
 
 // Sets default values
 AItemBox::AItemBox()
@@ -26,7 +29,6 @@ AItemBox::AItemBox()
 	{
 		Mesh->SetStaticMesh(BoxMeshRef.Object);
 	}
-	Mesh->SetRelativeLocation(FVector(0.0f, -3.5f, -30.0f));
 	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
 
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> EffectRef(TEXT("/Script/Engine.ParticleSystem'/Game/Effect/P_TreasureChest_Open_Mesh.P_TreasureChest_Open_Mesh'"));
@@ -37,8 +39,39 @@ AItemBox::AItemBox()
 	}
 }
 
+void AItemBox::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	UAssetManager& Manager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+	Manager.GetPrimaryAssetIdList(TEXT("ItemDataAsset"), Assets); // Potion
+	TArray<FPrimaryAssetId> WeaponAssets;
+	Manager.GetPrimaryAssetIdList(TEXT("WeaponItemData"), WeaponAssets); // Weapon
+	
+	Assets.Append(WeaponAssets);
+	ensure(Assets.Num() > 0);
+
+	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));
+	if (AssetPtr.IsPending())
+	{
+		AssetPtr.LoadSynchronous();
+	}
+	Item = Cast<UItemDataAsset>(AssetPtr.Get());
+	ensure(Item);
+
+}
+
 void AItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
 {
+	IItemInterface* OverlappingPawn = Cast<IItemInterface>(OtherActor);
+	if(OverlappingPawn)
+	{
+		OverlappingPawn->TakeItem(Item);
+	}
+
 	Effect->Activate(true);
 	Mesh->SetHiddenInGame(true);
 	SetActorEnableCollision(false);

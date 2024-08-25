@@ -119,7 +119,7 @@ void AEnemyCharacterBase::SetDead()
 	SetActorEnableCollision(false);
 
 	// 아이템 박스 생성
-	FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, 50.0f); // 적의 위치 위에 아이템 박스를 스폰
+	FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, -30.0f); // 적의 위치 위에 아이템 박스를 스폰
 	FRotator SpawnRotation = FRotator::ZeroRotator;
 	FActorSpawnParameters SpawnParams;
 	GetWorld()->SpawnActor<AItemBox>(AItemBox::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
