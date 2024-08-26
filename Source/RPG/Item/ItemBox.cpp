@@ -64,7 +64,6 @@ void AItemBox::PostInitializeComponents()
 		Item = Cast<UItemDataAsset>(AssetPtr.Get());
 	}
 
-	
 }
 
 void AItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)

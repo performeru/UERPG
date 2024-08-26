@@ -25,6 +25,8 @@ public:
 	FORCEINLINE float GetCurrentHp() { return CurrentHp; }
 	float ApplyDamage(float InDamage);
 
+	void UpdateHp(float NewHp) { SetHp(NewHp); }
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

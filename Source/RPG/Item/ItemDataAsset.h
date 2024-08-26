@@ -13,7 +13,6 @@ enum class EItem : uint8
 	Potion
 };
 
-
 /**
  * 
  */
@@ -25,6 +24,9 @@ class RPG_API UItemDataAsset : public UPrimaryDataAsset
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
 	EItem Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Potion")
+	float HpAmount = 50.0f;  // 포션 회복량을 포함하는 변수
 
 public:
 	FPrimaryAssetId GetPrimaryAssetId() const override

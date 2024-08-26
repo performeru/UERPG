@@ -333,7 +333,24 @@ void APlayerCharacter::TakeItem(UItemDataAsset* InItemData)
 
 void APlayerCharacter::DrinkPotion(UItemDataAsset* InItemData)
 {
-	UE_LOG(LogTemp, Log, TEXT("HP READ"));
+	if (InItemData)
+	{
+		if (InItemData->Type == EItem::Potion)
+		{
+			// 포션의 회복량
+			float RestoreAmount = InItemData->HpAmount;
+
+			// 현재 HP와 최대 HP를 가져와서 회복량 적용
+			float NewHp = Stat->GetCurrentHp() + RestoreAmount;
+			NewHp = FMath::Clamp(NewHp, 0.0f, Stat->GetMaxHp());
+
+			// HP를 설정
+			Stat->UpdateHp(NewHp);
+
+			// 로그를 통해 회복 확인
+			UE_LOG(LogTemp, Log, TEXT("HP restored by %f. New HP: %f"), RestoreAmount, NewHp);
+		}
+	}
 }
 
 void APlayerCharacter::EquipWeapon(UItemDataAsset* InItemData)
