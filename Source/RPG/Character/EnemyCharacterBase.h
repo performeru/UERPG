@@ -98,6 +98,11 @@ protected:
 	TObjectPtr<class URPWidgetComponent> EnemyHpBar;
 
 	virtual void SetupEnemyWidget(class URPUserWidget* InUserWidget) override;
+// 경험치
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	float ExperienceValue;  // 적 처치 시 제공하는 경험치 값
+
 private:
 	bool bIsDead;
 };

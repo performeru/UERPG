@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/RPHUD.h"
 #include "UI/CharacterHpInfoWidget.h"
+#include "UI/ExperienceWidget.h" 
 #include "Item/WeaponItemData.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -111,6 +112,18 @@ APlayerCharacter::APlayerCharacter()
 	// Weapon Component
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
 	Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+
+	// Level
+	PlayerLevel = 1;
+	CurrentExperience = 0.0f;
+	ExperienceToNextLevel = 100.0f;
+
+	// Set default values for the ExperienceWidgetClass
+	static ConstructorHelpers::FClassFinder<UExperienceWidget> WidgetClassFinder(TEXT("/Game/UI/ExperienceWidget.ExperienceWidget_C"));
+	if (WidgetClassFinder.Succeeded())
+	{
+		ExperienceWidgetClass = WidgetClassFinder.Class;
+	}
 }
 
 void APlayerCharacter::BeginPlay()
@@ -121,6 +134,17 @@ void APlayerCharacter::BeginPlay()
 	SetCharacterControl(CurrentCharacterControlType);
 
 	Stat->OnHpChanged.AddUObject(this, &APlayerCharacter::UpdateHealthUI);
+
+	// 경험치 위젯을 생성하고 화면에 추가
+	if (ExperienceWidgetClass)
+	{
+		ExperienceWidget = CreateWidget<UExperienceWidget>(GetWorld(), ExperienceWidgetClass);
+		if (ExperienceWidget)
+		{
+			ExperienceWidget->AddToViewport();
+			UpdateExperienceUI();  // 초기 경험치 값을 반영
+		}
+	}
 }
 
 // Dead
@@ -346,9 +370,6 @@ void APlayerCharacter::DrinkPotion(UItemDataAsset* InItemData)
 
 			// HP를 설정
 			Stat->UpdateHp(NewHp);
-
-			// 로그를 통해 회복 확인
-			UE_LOG(LogTemp, Log, TEXT("HP restored by %f. New HP: %f"), RestoreAmount, NewHp);
 		}
 	}
 }
@@ -365,4 +386,33 @@ void APlayerCharacter::EquipWeapon(UItemDataAsset* InItemData)
 		}
 		Weapon->SetSkeletalMesh(WeaponItemAsset->WeaponMesh.Get());
 	}
+}
+
+void APlayerCharacter::UpdateExperienceUI()
+{
+	if (ExperienceWidget)
+	{
+		ExperienceWidget->UpdateExperience(CurrentExperience, ExperienceToNextLevel);
+		ExperienceWidget->SetLevel(PlayerLevel); // 레벨 UI 업데이트
+	}
+}
+
+void APlayerCharacter::GainExperience(float Amount)
+{
+	CurrentExperience += Amount;
+
+	if (CurrentExperience >= ExperienceToNextLevel)
+	{
+		LevelUp();
+	}
+	UpdateExperienceUI();  // UI 업데이트
+}
+
+void APlayerCharacter::LevelUp()
+{
+	PlayerLevel++;
+	CurrentExperience = CurrentExperience - ExperienceToNextLevel;
+	ExperienceToNextLevel *= 1.5f;  // 레벨업할 때마다 필요한 경험치 증가
+
+	UpdateExperienceUI();
 }

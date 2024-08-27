@@ -10,6 +10,17 @@ URPCharacterStatComponent::URPCharacterStatComponent()
 	MaxHp = 200.0f;
 
 	SetHp(MaxHp);
+
+	bWantsInitializeComponent = true;
+}
+
+// Called when the game starts
+void URPCharacterStatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CurrentHp = MaxHp;
+
 }
 
 float URPCharacterStatComponent::ApplyDamage(float InDamage)
@@ -24,16 +35,6 @@ float URPCharacterStatComponent::ApplyDamage(float InDamage)
 	}
 
 	return ActualDamage;
-}
-
-
-// Called when the game starts
-void URPCharacterStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	CurrentHp = MaxHp;
-	
 }
 
 void URPCharacterStatComponent::SetHp(float NewHp)

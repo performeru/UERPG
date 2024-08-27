@@ -10,6 +10,7 @@
 #include "CharacterStat/RPEnemyStatComponent.h"
 #include "UI/RPWidgetComponent.h"
 #include"UI/EnemyHpBarWidget.h"
+#include "PlayerCharacter.h"
 #include "Item/ItemBox.h"
 
 
@@ -123,6 +124,14 @@ void AEnemyCharacterBase::SetDead()
 	FRotator SpawnRotation = FRotator::ZeroRotator;
 	FActorSpawnParameters SpawnParams;
 	GetWorld()->SpawnActor<AItemBox>(AItemBox::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
+
+
+	// 플레이어에게 경험치 제공
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->GainExperience(ExperienceValue);  // 적 처치 시 제공할 경험치 값
+	}
 
 	FTimerHandle DeadTimerHanlde;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHanlde, FTimerDelegate::CreateLambda([&]() { Destroy(); }), EnemyDeadEventDelayTime, false);

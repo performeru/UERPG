@@ -127,4 +127,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USkeletalMeshComponent> Weapon;
 
+protected:
+	// 레벨 섹션
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	float CurrentExperience;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	float ExperienceToNextLevel;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	int32 PlayerLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UExperienceWidget> ExperienceWidgetClass;
+
+	UPROPERTY()
+	UExperienceWidget* ExperienceWidget;
+
+	// 경험치 UI 업데이트 함수
+	void UpdateExperienceUI();
+
+public:
+	// 경험치와 레벨 관련 함수
+	void GainExperience(float Amount);
+	void LevelUp();
 };

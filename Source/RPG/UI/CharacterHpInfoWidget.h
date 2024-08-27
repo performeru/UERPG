@@ -13,7 +13,6 @@ UCLASS()
 class RPG_API UCharacterHpInfoWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetHealthBarPercent(float Percent);

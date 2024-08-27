@@ -32,6 +32,7 @@ AMushroomCharacter::AMushroomCharacter()
 		AttackActionMontage = EnemyAttackMontageRef.Object;
 	}
 
+	ExperienceValue = 100.0f;
 }
 
 void AMushroomCharacter::SetDead()
