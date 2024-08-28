@@ -26,7 +26,11 @@ public:
 	float ApplyDamage(float InDamage);
 
 	void UpdateHp(float NewHp) { SetHp(NewHp); }
-
+public:
+	// 레벨업 시 호출될 함수
+	void LevelUpStats();
+	// 공격력을 반환하는 함수
+	float GetAttackPower();
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -40,5 +44,14 @@ protected:
 
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
 	float CurrentHp;
+
+	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
+	float AttackPower;
+	
+	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
+	float HpIncreasePerLevel;
+	
+	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
+	float AttackPowerIncreasePerLevel;
 
 };

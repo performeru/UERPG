@@ -205,6 +205,8 @@ void APlayerCharacter::QuaterMove(const FInputActionValue& Value)
 void APlayerCharacter::Attack()
 {
 	ProcessComboCommand();
+
+	UE_LOG(LogTemp, Warning, TEXT("Player Attack Power: %f"), Stat->GetAttackPower());
 }
 
 void APlayerCharacter::AttackHitCheck()
@@ -214,7 +216,7 @@ void APlayerCharacter::AttackHitCheck()
 
 	const float AttackRange = 40.0f;
 	const float AttackRadius = 50.0f;
-	const float AttackDamage = 100.0f;
+	const float AttackDamage = 0.0f;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
@@ -414,5 +416,11 @@ void APlayerCharacter::LevelUp()
 	CurrentExperience = CurrentExperience - ExperienceToNextLevel;
 	ExperienceToNextLevel *= 1.5f;  // 레벨업할 때마다 필요한 경험치 증가
 
+	if (Stat)
+	{
+		Stat->LevelUpStats(); // 스탯 증가 함수 호출
+	}
+
 	UpdateExperienceUI();
+	UpdateHealthUI(Stat->GetCurrentHp()); // 체력 UI 업데이트
 }

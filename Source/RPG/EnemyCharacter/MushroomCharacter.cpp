@@ -2,6 +2,9 @@
 
 
 #include "EnemyCharacter/MushroomCharacter.h"
+#include "Character/PlayerCharacter.h"
+#include "CharacterStat/RPEnemyStatComponent.h"
+
 
 AMushroomCharacter::AMushroomCharacter()
 {
@@ -32,6 +35,16 @@ AMushroomCharacter::AMushroomCharacter()
 		AttackActionMontage = EnemyAttackMontageRef.Object;
 	}
 
+	// 컴포넌트가 정상적으로 생성되었다면 초기화
+	if (EnemyStat)
+	{
+		// Setter 함수를 이용해 초기화
+		EnemyStat->SetEnemyHp(100.0f);           // 최대 체력 설정
+		EnemyStat->SetEnemyCurrentHp(100.0f);    // 현재 체력 설정
+		EnemyStat->SetEnemyLevel(1.0f);           // 레벨 초기화
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Mushroom Character Initialized with HP: %f"), EnemyStat->EnemyGetCurrentHp());
+
 	ExperienceValue = 100.0f;
 }
 
@@ -52,4 +65,24 @@ void AMushroomCharacter::NotifyAttackActionEnd()
 	Super::NotifyAttackActionEnd();
 
 	OnAttackFinished.ExecuteIfBound();
+}
+
+float AMushroomCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+
+	APlayerCharacter* Attacker = Cast<APlayerCharacter>(DamageCauser);
+	if (Attacker && Attacker->GetStat())
+	{
+		// 공격자의 공격력을 데미지에 반영
+		float AttackPower = Attacker->GetStat()->GetAttackPower();
+		UE_LOG(LogTemp, Warning, TEXT("Player Attack Power: %f"), AttackPower);
+
+		DamageAmount += AttackPower; // 공격력 추가
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Damage Amount before ApplyDamage: %f"), DamageAmount);
+
+	return EnemyStat->ApplyDamage(DamageAmount);
 }

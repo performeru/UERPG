@@ -8,10 +8,13 @@
 URPCharacterStatComponent::URPCharacterStatComponent()
 {
 	MaxHp = 200.0f;
+	AttackPower = 20.0f;
+	AttackPowerIncreasePerLevel = 5.0f; // 레벨업 시 증가할 공격력 양
 
 	SetHp(MaxHp);
 
 	bWantsInitializeComponent = true;
+
 }
 
 // Called when the game starts
@@ -35,6 +38,17 @@ float URPCharacterStatComponent::ApplyDamage(float InDamage)
 	}
 
 	return ActualDamage;
+}
+
+void URPCharacterStatComponent::LevelUpStats()
+{
+	AttackPower += AttackPowerIncreasePerLevel; // 공격력 증가
+	SetHp(MaxHp);                            // 레벨업 시 체력을 최대치로 회복
+}
+
+float URPCharacterStatComponent::GetAttackPower() 
+{
+	return AttackPower;
 }
 
 void URPCharacterStatComponent::SetHp(float NewHp)

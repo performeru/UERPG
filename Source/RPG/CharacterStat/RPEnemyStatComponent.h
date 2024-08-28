@@ -21,7 +21,11 @@ public:
 	FOnEnemyHpZeroDelegate OnEnemyHpZero;
 	FOnEnemyHpChangedDelegate OnEnemyHpChanged;
 
-	FORCEINLINE float EnemyGetMaxHp() { return EnemyMaxHp; }
+	void SetEnemyHp(float NewHp);
+	void SetEnemyCurrentHp(float NewCurrentHp);
+	void SetEnemyLevel(float NewLevel);
+
+	FORCEINLINE float EnemyGetHp() { return EnemyHp; }
 	FORCEINLINE float EnemyGetCurrentHp() { return EnemyCurrentHp; }
 	float ApplyDamage(float InDamage);
 
@@ -32,9 +36,13 @@ protected:
 protected:
 	void EnemySetHp(float NewEnemyHp);
 
-	UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowAbstract = "true"))
-	float EnemyMaxHp;
+	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	float EnemyHp;
 	
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", meta = (AllowAbstract = "true"))
 	float EnemyCurrentHp;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	float EnemyLevel;
+
 };

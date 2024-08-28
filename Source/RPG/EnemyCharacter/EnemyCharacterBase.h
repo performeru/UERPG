@@ -76,11 +76,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float AttackRadius;
 
-	UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	/*UPROPERTY(VisibleInstanceOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float EnemyLevel;
 
 	UPROPERTY(VisibleAnywhere, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float EnemyHp;
+	float EnemyHp;*/
 
 	const float EnemyAttackRange = 40.0f;
 	const float EnemyAttackRadius = 50.0f;

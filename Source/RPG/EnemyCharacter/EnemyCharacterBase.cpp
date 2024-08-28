@@ -8,9 +8,9 @@
 #include "Engine/DamageEvents.h"
 #include "EnemyCharacter/RP_EnemyAttack.h"
 #include "CharacterStat/RPEnemyStatComponent.h"
+#include "Character/PlayerCharacter.h"
 #include "UI/RPWidgetComponent.h"
 #include "UI/EnemyHpBarWidget.h"
-#include "Character/PlayerCharacter.h"
 #include "Item/ItemBox.h"
 
 
@@ -72,7 +72,6 @@ void AEnemyCharacterBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	//EnemyStat->OnEnemyHpZero.AddUObject(this, &AEnemyCharacterBase::SetDead);
 }
 
 // Called when the game starts or when spawned
@@ -100,8 +99,6 @@ void AEnemyCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInput
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	EnemyStat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
 }
@@ -290,15 +287,12 @@ void AEnemyCharacterBase::SetupEnemyWidget(URPUserWidget* InUserWidget)
 	UEnemyHpBarWidget* EnemyHpBarWidget = Cast<UEnemyHpBarWidget>(InUserWidget);
 	if(EnemyHpBarWidget)
 	{
-		float MaxHp = EnemyStat->EnemyGetMaxHp();
+		float MaxHp = EnemyStat->EnemyGetHp();
 		float CurrentHp = EnemyStat->EnemyGetCurrentHp();
 
 		EnemyHpBarWidget->EnemySetMaxHp(MaxHp);
 		EnemyHpBarWidget->UpdateEnemyHpBar(CurrentHp);
 
-
-		//EnemyHpBarWidget->EnemySetMaxHp(EnemyStat->EnemyGetMaxHp());
-		//EnemyHpBarWidget->UpdateEnemyHpBar(EnemyStat->EnemyGetCurrentHp());
 		EnemyStat->OnEnemyHpChanged.AddUObject(EnemyHpBarWidget, &UEnemyHpBarWidget::UpdateEnemyHpBar);
 	}
 
