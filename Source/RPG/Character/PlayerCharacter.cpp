@@ -38,7 +38,7 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
-	// Input
+	// 입력
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext>Mapping(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Blueprint/InputMapping/Mapping.Mapping'"));
 	if(Mapping.Object)
 	{
@@ -155,6 +155,7 @@ void APlayerCharacter::PostInitializeComponents()
 	Stat->OnHpZero.AddUObject(this, &APlayerCharacter::SetDead);
 }
 
+// View
 void APlayerCharacter::ShoulderMove(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -276,8 +277,6 @@ void APlayerCharacter::UpdateHealthUI(float CurrentHealth)
 {
 	if(CharacterHpInfoWidget)
 	{
-		/*float HealthPercent = CurrentHealth / Stat->GetMaxHp();
-		CharacterHpInfoWidget->SetHealthBarPercent(HealthPercent);*/
 		float HealthPercent = Stat->GetMaxHp() > 0 ? CurrentHealth / Stat->GetMaxHp() : 0.0f;
 		CharacterHpInfoWidget->SetHealthBarPercent(HealthPercent);
 
@@ -389,6 +388,7 @@ void APlayerCharacter::EquipWeapon(UItemDataAsset* InItemData)
 		Weapon->SetSkeletalMesh(WeaponItemAsset->WeaponMesh.Get());
 	}
 }
+// UI
 
 void APlayerCharacter::UpdateExperienceUI()
 {
@@ -424,3 +424,4 @@ void APlayerCharacter::LevelUp()
 	UpdateExperienceUI();
 	UpdateHealthUI(Stat->GetCurrentHp()); // 체력 UI 업데이트
 }
+

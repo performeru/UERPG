@@ -3,7 +3,4 @@
 
 #include "Character/ComboActionDataAsset.h"
 
-UComboActionDataAsset::UComboActionDataAsset()
-{
-
-}
+UComboActionDataAsset::UComboActionDataAsset(){}

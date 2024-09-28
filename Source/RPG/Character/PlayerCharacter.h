@@ -7,6 +7,7 @@
 #include "Interface/ItemInterface.h"
 #include "PlayerCharacter.generated.h"
 
+// Enums & Delegates
 UENUM()
 enum class ECharacterControlType : uint8
 {
@@ -21,12 +22,13 @@ struct FTakeItemDelegate
 {
 	GENERATED_BODY()
 
-	FTakeItemDelegate(){}
+	FTakeItemDelegate() {}
 	FTakeItemDelegate(const FOnTakeItemDelegate& InItemDelegate) : ItemDelegate(InItemDelegate) {}
 
 	FOnTakeItemDelegate ItemDelegate;
 };
 
+// Class Declaration
 UCLASS()
 class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttackInterface, public IItemInterface
 {
@@ -34,14 +36,11 @@ class RPG_API APlayerCharacter : public ACharacterBase, public IRPAnimationAttac
 
 public:
 	APlayerCharacter();
-
 	virtual void PostInitializeComponents() override;
-
-public:
 	virtual void BeginPlay() override;
+
 protected:
 	// Camera
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<class USpringArmComponent> CameraBoom;
 
@@ -50,8 +49,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	float LookSensitivity = 1.0f;
-protected:
-	// Input
+
+	// Input Mapping
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
@@ -74,11 +73,13 @@ protected:
 	TObjectPtr<class UInputAction> AttackAction;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Character Control
 	void SetCharacterControlData(const class UCharacterControlDataAsset* CharacterControlData);
 	void ChangeCharacterControl();
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 
-	UPROPERTY(EditAnywhere, Category = CharacterControl, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "CharacterControl", meta = (AllowPrivateAccess = "true"))
 	TMap<ECharacterControlType, class UCharacterControlDataAsset*> CharacterControlManager;
 
 	void ShoulderMove(const FInputActionValue& Value);
@@ -89,25 +90,25 @@ protected:
 	void QuaterMove(const FInputActionValue& Value);
 	void Attack();
 
+	// Combat
 	virtual void AttackHitCheck() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-protected:
-	// Stat Section
+	// Stats
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
 	TObjectPtr<class URPCharacterStatComponent> Stat;
+
 public:
-	// Getter for Stat
 	UFUNCTION(BlueprintCallable, Category = "Stat")
 	URPCharacterStatComponent* GetStat() const { return Stat; }
-	
+
 	// Health UI
 	UPROPERTY()
 	TObjectPtr<class UCharacterHpInfoWidget> CharacterHpInfoWidget;
 
 	void UpdateHealthUI(float CurrentHealth);
-protected:
-	// Dead Section
+
+	// Death Handling
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowAbstract = "true"))
 	TObjectPtr<class UAnimMontage> DeadMontage;
 
@@ -115,8 +116,7 @@ protected:
 	float DeadEventDelayTime = 2.0f;
 	void PlayDeadAnimation();
 
-protected:
-	// Item Section
+	// Item Handling
 	UPROPERTY()
 	TArray<FTakeItemDelegate> TakeItemAction;
 
@@ -127,8 +127,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USkeletalMeshComponent> Weapon;
 
-protected:
-	// 레벨 섹션
+	// Leveling System
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	float CurrentExperience;
 
@@ -144,11 +143,9 @@ protected:
 	UPROPERTY()
 	UExperienceWidget* ExperienceWidget;
 
-	// 경험치 UI 업데이트 함수
 	void UpdateExperienceUI();
 
 public:
-	// 경험치와 레벨 관련 함수
 	void GainExperience(float Amount);
 	void LevelUp();
 };
