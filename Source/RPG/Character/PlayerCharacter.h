@@ -5,6 +5,8 @@
 #include "InputActionValue.h"
 #include "Interface/RPAnimationAttackInterface.h"
 #include "Interface/ItemInterface.h"
+#include "Item/StartWeapon.h"
+#include "Item/StartWeapon.h"
 #include "PlayerCharacter.generated.h"
 
 // Enums & Delegates
@@ -38,6 +40,8 @@ public:
 	APlayerCharacter();
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
+
+	TObjectPtr<class AStartWeapon> CurrentWeapon;
 
 protected:
 	// Camera
@@ -121,8 +125,9 @@ public:
 	TArray<FTakeItemDelegate> TakeItemAction;
 
 	virtual void TakeItem(class UItemDataAsset* InItemData) override;
-	virtual void DrinkPotion(class UItemDataAsset* InItemData);
-	virtual void EquipWeapon(class UItemDataAsset* InItemData);
+	void DrinkPotion(class UItemDataAsset* InItemData);
+	void EquipWeapon(class UItemDataAsset* InItemData);
+	void EquipWeapon(AStartWeapon* NewWeapon);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USkeletalMeshComponent> Weapon;

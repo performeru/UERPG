@@ -14,6 +14,8 @@
 #include "UI/CharacterHpInfoWidget.h"
 #include "UI/ExperienceWidget.h" 
 #include "Item/WeaponItemData.h"
+#include "Item/StartWeapon.h"
+#include "Components/SkeletalMeshComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -385,11 +387,22 @@ void APlayerCharacter::EquipWeapon(UItemDataAsset* InItemData)
 		{
 			WeaponItemAsset->WeaponMesh.LoadSynchronous();
 		}
-		Weapon->SetSkeletalMesh(WeaponItemAsset->WeaponMesh.Get());
+		this->Weapon->SetSkeletalMesh(WeaponItemAsset->WeaponMesh.Get());
+	}
+}
+void APlayerCharacter::EquipWeapon(AStartWeapon* NewWeapon)
+{
+	if (NewWeapon)
+	{
+		USkeletalMeshComponent* NewWeaponMesh = NewWeapon->GetWeaponMesh();
+
+		if (NewWeaponMesh)
+		{
+			this->Weapon->SetSkeletalMesh(NewWeaponMesh->GetSkeletalMeshAsset()); 
+		}
 	}
 }
 // UI
-
 void APlayerCharacter::UpdateExperienceUI()
 {
 	if (ExperienceWidget)
