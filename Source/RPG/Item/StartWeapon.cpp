@@ -48,7 +48,7 @@ void AStartWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 	{
 		// AStartWeapon을 캐릭터가 직접 장착하도록 수정
 		PlayerCharacter->EquipWeapon(this); // this는 AStartWeapon* 타입
-		Destroy();  // 무기 제거 (혹은 숨기기)
+		Destroy();  
 	}
 }
 

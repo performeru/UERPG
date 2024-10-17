@@ -7,10 +7,7 @@
 #include "Interface/RPAIAllInterface.h"
 
 
-UMyBTTask_TurnToTarget::UMyBTTask_TurnToTarget()
-{
-	
-}
+UMyBTTask_TurnToTarget::UMyBTTask_TurnToTarget(){}
 
 EBTNodeResult::Type UMyBTTask_TurnToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
