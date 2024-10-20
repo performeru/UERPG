@@ -50,7 +50,7 @@ float URPCharacterStatComponent::ApplyDamage(float InDamage)
 
 
 
-### 관련 코드: [캐릭터 코드 보기](https://github.com/performeru/UERPG/tree/main/Source/RPG/Character)
+### 관련 코드: [캐릭터 코드](https://github.com/performeru/UERPG/tree/main/Source/RPG/Character)
 
 ## 3. 몬스터 & 애니메이션
 
@@ -128,7 +128,8 @@ void AEnemyCharacterBase::SetDead()
 
 <img src="https://github.com/user-attachments/assets/4a8d4ca5-e58c-46c3-91a2-e8368075e9de" width="600"/> 
 
-### 관련 코드: [몬스터 코드 보기](https://github.com/performeru/UERPG/tree/main/Source/RPG/EnemyCharacter)
+### 관련 코드: [몬스터 코드](https://github.com/performeru/UERPG/tree/main/Source/RPG/EnemyCharacter)
+### 관련 코드: [아이템 코드](https://github.com/performeru/UERPG/tree/main/Source/RPG/Item)
 
 ## 4. AI 
 ### 비헤이어 트리
@@ -205,7 +206,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 }
 ```
 
-### 관련 코드: [AI 코드 보기](https://github.com/performeru/UERPG/tree/main/Source/RPG/AI)
+### 관련 코드: [AI 코드](https://github.com/performeru/UERPG/tree/main/Source/RPG/AI)
 
 ___
 
